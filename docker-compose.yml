@@ -1,0 +1,16 @@
+services:
+  postgres:
+    image: postgres:14.25-alpine3.24
+    container_name: agendamento_fatec_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: fatec_user
+      POSTGRES_PASSWORD: fatec_password
+      POSTGRES_DB: agendamento_fatec
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:

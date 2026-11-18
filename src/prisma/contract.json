@@ -1,0 +1,2864 @@
+{
+  "schemaVersion": "1",
+  "targetFamily": "sql",
+  "target": "postgres",
+  "profileHash": "3916f444a8a17ad749191acf9e08dad97d1a327b88c2f1d45d12f240296aa8b2",
+  "roots": {
+    "Agendamento": {
+      "model": "Agendamento",
+      "namespace": "public"
+    },
+    "AlteracaoAgendamento": {
+      "model": "AlteracaoAgendamento",
+      "namespace": "public"
+    },
+    "Aluno": {
+      "model": "Aluno",
+      "namespace": "public"
+    },
+    "Bloco": {
+      "model": "Bloco",
+      "namespace": "public"
+    },
+    "Curso": {
+      "model": "Curso",
+      "namespace": "public"
+    },
+    "Equipamento": {
+      "model": "Equipamento",
+      "namespace": "public"
+    },
+    "Gestor": {
+      "model": "Gestor",
+      "namespace": "public"
+    },
+    "Notificacao": {
+      "model": "Notificacao",
+      "namespace": "public"
+    },
+    "Professor": {
+      "model": "Professor",
+      "namespace": "public"
+    },
+    "ProfessorCurso": {
+      "model": "ProfessorCurso",
+      "namespace": "public"
+    },
+    "Sala": {
+      "model": "Sala",
+      "namespace": "public"
+    },
+    "SalaEquipamento": {
+      "model": "SalaEquipamento",
+      "namespace": "public"
+    },
+    "SalaSoftware": {
+      "model": "SalaSoftware",
+      "namespace": "public"
+    },
+    "Software": {
+      "model": "Software",
+      "namespace": "public"
+    },
+    "TipoSala": {
+      "model": "TipoSala",
+      "namespace": "public"
+    },
+    "Usuario": {
+      "model": "Usuario",
+      "namespace": "public"
+    }
+  },
+  "domain": {
+    "namespaces": {
+      "public": {
+        "enum": {
+          "StatusAgendamento": {
+            "codecId": "pg/text@1",
+            "members": [
+              {
+                "name": "PENDENTE",
+                "value": "PENDENTE"
+              },
+              {
+                "name": "APROVADO",
+                "value": "APROVADO"
+              },
+              {
+                "name": "REJEITADO",
+                "value": "REJEITADO"
+              },
+              {
+                "name": "CANCELADO",
+                "value": "CANCELADO"
+              },
+              {
+                "name": "EM_NEGOCIACAO",
+                "value": "EM_NEGOCIACAO"
+              }
+            ]
+          },
+          "TipoUsuario": {
+            "codecId": "pg/text@1",
+            "members": [
+              {
+                "name": "ALUNO",
+                "value": "ALUNO"
+              },
+              {
+                "name": "PROFESSOR",
+                "value": "PROFESSOR"
+              },
+              {
+                "name": "GESTOR",
+                "value": "GESTOR"
+              }
+            ]
+          }
+        },
+        "models": {
+          "Agendamento": {
+            "fields": {
+              "criadoEm": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-date@1",
+                  "kind": "scalar",
+                  "typeParams": {
+                    "precision": 3
+                  }
+                }
+              },
+              "cursoId": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "dataFim": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-date@1",
+                  "kind": "scalar",
+                  "typeParams": {
+                    "precision": 3
+                  }
+                }
+              },
+              "dataInicio": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-date@1",
+                  "kind": "scalar",
+                  "typeParams": {
+                    "precision": 3
+                  }
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "motivo": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "salaId": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "solicitanteId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "status": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                },
+                "valueSet": {
+                  "entityKind": "enum",
+                  "entityName": "StatusAgendamento",
+                  "namespaceId": "public",
+                  "plane": "domain"
+                }
+              }
+            },
+            "relations": {
+              "curso": {
+                "cardinality": "N:1",
+                "nullable": true,
+                "on": {
+                  "localFields": [
+                    "cursoId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "Curso",
+                  "namespace": "public"
+                }
+              },
+              "historico": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "agendamentoId"
+                  ]
+                },
+                "to": {
+                  "model": "AlteracaoAgendamento",
+                  "namespace": "public"
+                }
+              },
+              "sala": {
+                "cardinality": "N:1",
+                "nullable": true,
+                "on": {
+                  "localFields": [
+                    "salaId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "Sala",
+                  "namespace": "public"
+                }
+              },
+              "solicitante": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "solicitanteId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "Usuario",
+                  "namespace": "public"
+                }
+              }
+            },
+            "storage": {
+              "fields": {
+                "criadoEm": {
+                  "column": "criadoEm"
+                },
+                "cursoId": {
+                  "column": "cursoId"
+                },
+                "dataFim": {
+                  "column": "dataFim"
+                },
+                "dataInicio": {
+                  "column": "dataInicio"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "motivo": {
+                  "column": "motivo"
+                },
+                "salaId": {
+                  "column": "salaId"
+                },
+                "solicitanteId": {
+                  "column": "solicitanteId"
+                },
+                "status": {
+                  "column": "status"
+                }
+              },
+              "namespaceId": "public",
+              "table": "Agendamento"
+            }
+          },
+          "AlteracaoAgendamento": {
+            "fields": {
+              "agendamentoId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "autorId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "criadoEm": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-date@1",
+                  "kind": "scalar",
+                  "typeParams": {
+                    "precision": 3
+                  }
+                }
+              },
+              "dataFimProposta": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/timestamptz-date@1",
+                  "kind": "scalar",
+                  "typeParams": {
+                    "precision": 3
+                  }
+                }
+              },
+              "dataInicioProposta": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/timestamptz-date@1",
+                  "kind": "scalar",
+                  "typeParams": {
+                    "precision": 3
+                  }
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "justificativa": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "salaPropostaId": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "statusAnterior": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                },
+                "valueSet": {
+                  "entityKind": "enum",
+                  "entityName": "StatusAgendamento",
+                  "namespaceId": "public",
+                  "plane": "domain"
+                }
+              },
+              "statusNovo": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                },
+                "valueSet": {
+                  "entityKind": "enum",
+                  "entityName": "StatusAgendamento",
+                  "namespaceId": "public",
+                  "plane": "domain"
+                }
+              }
+            },
+            "relations": {
+              "agendamento": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "agendamentoId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "Agendamento",
+                  "namespace": "public"
+                }
+              },
+              "autor": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "autorId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "Usuario",
+                  "namespace": "public"
+                }
+              }
+            },
+            "storage": {
+              "fields": {
+                "agendamentoId": {
+                  "column": "agendamentoId"
+                },
+                "autorId": {
+                  "column": "autorId"
+                },
+                "criadoEm": {
+                  "column": "criadoEm"
+                },
+                "dataFimProposta": {
+                  "column": "dataFimProposta"
+                },
+                "dataInicioProposta": {
+                  "column": "dataInicioProposta"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "justificativa": {
+                  "column": "justificativa"
+                },
+                "salaPropostaId": {
+                  "column": "salaPropostaId"
+                },
+                "statusAnterior": {
+                  "column": "statusAnterior"
+                },
+                "statusNovo": {
+                  "column": "statusNovo"
+                }
+              },
+              "namespaceId": "public",
+              "table": "AlteracaoAgendamento"
+            }
+          },
+          "Aluno": {
+            "fields": {
+              "cursoId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "semestre": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "usuarioId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {
+              "curso": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "cursoId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "Curso",
+                  "namespace": "public"
+                }
+              },
+              "usuario": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "usuarioId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "Usuario",
+                  "namespace": "public"
+                }
+              }
+            },
+            "storage": {
+              "fields": {
+                "cursoId": {
+                  "column": "cursoId"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "semestre": {
+                  "column": "semestre"
+                },
+                "usuarioId": {
+                  "column": "usuarioId"
+                }
+              },
+              "namespaceId": "public",
+              "table": "Aluno"
+            }
+          },
+          "Bloco": {
+            "fields": {
+              "descritivo": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {
+              "salas": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "blocoId"
+                  ]
+                },
+                "to": {
+                  "model": "Sala",
+                  "namespace": "public"
+                }
+              }
+            },
+            "storage": {
+              "fields": {
+                "descritivo": {
+                  "column": "descritivo"
+                },
+                "id": {
+                  "column": "id"
+                }
+              },
+              "namespaceId": "public",
+              "table": "Bloco"
+            }
+          },
+          "Curso": {
+            "fields": {
+              "descritivo": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {
+              "agendamentos": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "cursoId"
+                  ]
+                },
+                "to": {
+                  "model": "Agendamento",
+                  "namespace": "public"
+                }
+              },
+              "alunos": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "cursoId"
+                  ]
+                },
+                "to": {
+                  "model": "Aluno",
+                  "namespace": "public"
+                }
+              },
+              "professores": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "cursoId"
+                  ]
+                },
+                "to": {
+                  "model": "ProfessorCurso",
+                  "namespace": "public"
+                }
+              }
+            },
+            "storage": {
+              "fields": {
+                "descritivo": {
+                  "column": "descritivo"
+                },
+                "id": {
+                  "column": "id"
+                }
+              },
+              "namespaceId": "public",
+              "table": "Curso"
+            }
+          },
+          "Equipamento": {
+            "fields": {
+              "descricao": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "descritivo": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {
+              "salas": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "equipamentoId"
+                  ]
+                },
+                "to": {
+                  "model": "SalaEquipamento",
+                  "namespace": "public"
+                }
+              }
+            },
+            "storage": {
+              "fields": {
+                "descricao": {
+                  "column": "descricao"
+                },
+                "descritivo": {
+                  "column": "descritivo"
+                },
+                "id": {
+                  "column": "id"
+                }
+              },
+              "namespaceId": "public",
+              "table": "Equipamento"
+            }
+          },
+          "Gestor": {
+            "fields": {
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "usuarioId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {
+              "usuario": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "usuarioId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "Usuario",
+                  "namespace": "public"
+                }
+              }
+            },
+            "storage": {
+              "fields": {
+                "id": {
+                  "column": "id"
+                },
+                "usuarioId": {
+                  "column": "usuarioId"
+                }
+              },
+              "namespaceId": "public",
+              "table": "Gestor"
+            }
+          },
+          "Notificacao": {
+            "fields": {
+              "criadoEm": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-date@1",
+                  "kind": "scalar",
+                  "typeParams": {
+                    "precision": 3
+                  }
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "lida": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/bool@1",
+                  "kind": "scalar"
+                }
+              },
+              "mensagem": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "usuarioId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {
+              "usuario": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "usuarioId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "Usuario",
+                  "namespace": "public"
+                }
+              }
+            },
+            "storage": {
+              "fields": {
+                "criadoEm": {
+                  "column": "criadoEm"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "lida": {
+                  "column": "lida"
+                },
+                "mensagem": {
+                  "column": "mensagem"
+                },
+                "usuarioId": {
+                  "column": "usuarioId"
+                }
+              },
+              "namespaceId": "public",
+              "table": "Notificacao"
+            }
+          },
+          "Professor": {
+            "fields": {
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "usuarioId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {
+              "cursos": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "professorId"
+                  ]
+                },
+                "to": {
+                  "model": "ProfessorCurso",
+                  "namespace": "public"
+                }
+              },
+              "usuario": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "usuarioId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "Usuario",
+                  "namespace": "public"
+                }
+              }
+            },
+            "storage": {
+              "fields": {
+                "id": {
+                  "column": "id"
+                },
+                "usuarioId": {
+                  "column": "usuarioId"
+                }
+              },
+              "namespaceId": "public",
+              "table": "Professor"
+            }
+          },
+          "ProfessorCurso": {
+            "fields": {
+              "cursoId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "professorId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {
+              "curso": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "cursoId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "Curso",
+                  "namespace": "public"
+                }
+              },
+              "professor": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "professorId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "Professor",
+                  "namespace": "public"
+                }
+              }
+            },
+            "storage": {
+              "fields": {
+                "cursoId": {
+                  "column": "cursoId"
+                },
+                "professorId": {
+                  "column": "professorId"
+                }
+              },
+              "namespaceId": "public",
+              "table": "ProfessorCurso"
+            }
+          },
+          "Sala": {
+            "fields": {
+              "blocoId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "capacidade": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "codigoSvg": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "descritivo": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "tipoSalaId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {
+              "agendamentos": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "salaId"
+                  ]
+                },
+                "to": {
+                  "model": "Agendamento",
+                  "namespace": "public"
+                }
+              },
+              "bloco": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "blocoId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "Bloco",
+                  "namespace": "public"
+                }
+              },
+              "equipamentos": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "salaId"
+                  ]
+                },
+                "to": {
+                  "model": "SalaEquipamento",
+                  "namespace": "public"
+                }
+              },
+              "softwares": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "salaId"
+                  ]
+                },
+                "to": {
+                  "model": "SalaSoftware",
+                  "namespace": "public"
+                }
+              },
+              "tipoSala": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "tipoSalaId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "TipoSala",
+                  "namespace": "public"
+                }
+              }
+            },
+            "storage": {
+              "fields": {
+                "blocoId": {
+                  "column": "blocoId"
+                },
+                "capacidade": {
+                  "column": "capacidade"
+                },
+                "codigoSvg": {
+                  "column": "codigoSvg"
+                },
+                "descritivo": {
+                  "column": "descritivo"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "tipoSalaId": {
+                  "column": "tipoSalaId"
+                }
+              },
+              "namespaceId": "public",
+              "table": "Sala"
+            }
+          },
+          "SalaEquipamento": {
+            "fields": {
+              "equipamentoId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "quantidade": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "salaId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {
+              "equipamento": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "equipamentoId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "Equipamento",
+                  "namespace": "public"
+                }
+              },
+              "sala": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "salaId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "Sala",
+                  "namespace": "public"
+                }
+              }
+            },
+            "storage": {
+              "fields": {
+                "equipamentoId": {
+                  "column": "equipamentoId"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "quantidade": {
+                  "column": "quantidade"
+                },
+                "salaId": {
+                  "column": "salaId"
+                }
+              },
+              "namespaceId": "public",
+              "table": "SalaEquipamento"
+            }
+          },
+          "SalaSoftware": {
+            "fields": {
+              "salaId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "softwareId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {
+              "sala": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "salaId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "Sala",
+                  "namespace": "public"
+                }
+              },
+              "software": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "softwareId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "Software",
+                  "namespace": "public"
+                }
+              }
+            },
+            "storage": {
+              "fields": {
+                "salaId": {
+                  "column": "salaId"
+                },
+                "softwareId": {
+                  "column": "softwareId"
+                }
+              },
+              "namespaceId": "public",
+              "table": "SalaSoftware"
+            }
+          },
+          "Software": {
+            "fields": {
+              "descritivo": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "versao": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {
+              "salas": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "softwareId"
+                  ]
+                },
+                "to": {
+                  "model": "SalaSoftware",
+                  "namespace": "public"
+                }
+              }
+            },
+            "storage": {
+              "fields": {
+                "descritivo": {
+                  "column": "descritivo"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "versao": {
+                  "column": "versao"
+                }
+              },
+              "namespaceId": "public",
+              "table": "Software"
+            }
+          },
+          "TipoSala": {
+            "fields": {
+              "descritivo": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {
+              "salas": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "tipoSalaId"
+                  ]
+                },
+                "to": {
+                  "model": "Sala",
+                  "namespace": "public"
+                }
+              }
+            },
+            "storage": {
+              "fields": {
+                "descritivo": {
+                  "column": "descritivo"
+                },
+                "id": {
+                  "column": "id"
+                }
+              },
+              "namespaceId": "public",
+              "table": "TipoSala"
+            }
+          },
+          "Usuario": {
+            "fields": {
+              "cpf": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "email": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "emailValidado": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/bool@1",
+                  "kind": "scalar"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "nome": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "ra": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "senhaHash": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "tipoUsuario": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                },
+                "valueSet": {
+                  "entityKind": "enum",
+                  "entityName": "TipoUsuario",
+                  "namespaceId": "public",
+                  "plane": "domain"
+                }
+              }
+            },
+            "relations": {
+              "agendamentos": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "solicitanteId"
+                  ]
+                },
+                "to": {
+                  "model": "Agendamento",
+                  "namespace": "public"
+                }
+              },
+              "alteracoes": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "autorId"
+                  ]
+                },
+                "to": {
+                  "model": "AlteracaoAgendamento",
+                  "namespace": "public"
+                }
+              },
+              "aluno": {
+                "cardinality": "1:1",
+                "nullable": true,
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "usuarioId"
+                  ]
+                },
+                "to": {
+                  "model": "Aluno",
+                  "namespace": "public"
+                }
+              },
+              "gestor": {
+                "cardinality": "1:1",
+                "nullable": true,
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "usuarioId"
+                  ]
+                },
+                "to": {
+                  "model": "Gestor",
+                  "namespace": "public"
+                }
+              },
+              "notificacoes": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "usuarioId"
+                  ]
+                },
+                "to": {
+                  "model": "Notificacao",
+                  "namespace": "public"
+                }
+              },
+              "professor": {
+                "cardinality": "1:1",
+                "nullable": true,
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "usuarioId"
+                  ]
+                },
+                "to": {
+                  "model": "Professor",
+                  "namespace": "public"
+                }
+              }
+            },
+            "storage": {
+              "fields": {
+                "cpf": {
+                  "column": "cpf"
+                },
+                "email": {
+                  "column": "email"
+                },
+                "emailValidado": {
+                  "column": "emailValidado"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "nome": {
+                  "column": "nome"
+                },
+                "ra": {
+                  "column": "ra"
+                },
+                "senhaHash": {
+                  "column": "senhaHash"
+                },
+                "tipoUsuario": {
+                  "column": "tipoUsuario"
+                }
+              },
+              "namespaceId": "public",
+              "table": "Usuario"
+            }
+          }
+        }
+      }
+    }
+  },
+  "storage": {
+    "namespaces": {
+      "public": {
+        "entries": {
+          "table": {
+            "Agendamento": {
+              "checks": [
+                {
+                  "expression": "\"status\" IN ('PENDENTE', 'APROVADO', 'REJEITADO', 'CANCELADO', 'EM_NEGOCIACAO')",
+                  "name": "Agendamento_status_check_192c0b0d",
+                  "prefix": "Agendamento_status_check"
+                }
+              ],
+              "columns": {
+                "criadoEm": {
+                  "codecId": "pg/timestamptz-date@1",
+                  "dataType": "pg/timestamptz",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nullable": false,
+                  "typeParams": {
+                    "precision": 3
+                  }
+                },
+                "cursoId": {
+                  "codecId": "pg/int4@1",
+                  "dataType": "pg/int4",
+                  "nullable": true
+                },
+                "dataFim": {
+                  "codecId": "pg/timestamptz-date@1",
+                  "dataType": "pg/timestamptz",
+                  "nullable": false,
+                  "typeParams": {
+                    "precision": 3
+                  }
+                },
+                "dataInicio": {
+                  "codecId": "pg/timestamptz-date@1",
+                  "dataType": "pg/timestamptz",
+                  "nullable": false,
+                  "typeParams": {
+                    "precision": 3
+                  }
+                },
+                "id": {
+                  "codecId": "pg/int4@1",
+                  "dataType": "pg/int4",
+                  "default": {
+                    "expression": "autoincrement()",
+                    "kind": "function"
+                  },
+                  "nullable": false
+                },
+                "motivo": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": true
+                },
+                "salaId": {
+                  "codecId": "pg/int4@1",
+                  "dataType": "pg/int4",
+                  "nullable": true
+                },
+                "solicitanteId": {
+                  "codecId": "pg/int4@1",
+                  "dataType": "pg/int4",
+                  "nullable": false
+                },
+                "status": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "default": {
+                    "kind": "literal",
+                    "value": "PENDENTE"
+                  },
+                  "nullable": false,
+                  "valueSet": {
+                    "entityKind": "valueSet",
+                    "entityName": "StatusAgendamento",
+                    "namespaceId": "public",
+                    "plane": "storage"
+                  }
+                }
+              },
+              "foreignKeys": [
+                {
+                  "index": {
+                    "name": "Agendamento_solicitanteId_idx_ba8a92e6"
+                  },
+                  "source": {
+                    "columns": [
+                      "solicitanteId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "Agendamento"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "Usuario"
+                  }
+                },
+                {
+                  "index": {
+                    "name": "Agendamento_salaId_idx_e3c4d2be"
+                  },
+                  "source": {
+                    "columns": [
+                      "salaId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "Agendamento"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "Sala"
+                  }
+                },
+                {
+                  "index": {
+                    "name": "Agendamento_cursoId_idx_d90eb09b"
+                  },
+                  "source": {
+                    "columns": [
+                      "cursoId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "Agendamento"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "Curso"
+                  }
+                }
+              ],
+              "indexes": [
+                {
+                  "columns": [
+                    "cursoId"
+                  ],
+                  "name": "Agendamento_cursoId_idx_d90eb09b",
+                  "prefix": "Agendamento_cursoId_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "salaId"
+                  ],
+                  "name": "Agendamento_salaId_idx_e3c4d2be",
+                  "prefix": "Agendamento_salaId_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "solicitanteId"
+                  ],
+                  "name": "Agendamento_solicitanteId_idx_ba8a92e6",
+                  "prefix": "Agendamento_solicitanteId_idx",
+                  "unique": false
+                }
+              ],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": []
+            },
+            "AlteracaoAgendamento": {
+              "checks": [
+                {
+                  "expression": "\"statusAnterior\" IN ('PENDENTE', 'APROVADO', 'REJEITADO', 'CANCELADO', 'EM_NEGOCIACAO')",
+                  "name": "AlteracaoAgendamento_statusAnterior_check_386b7cf9",
+                  "prefix": "AlteracaoAgendamento_statusAnterior_check"
+                },
+                {
+                  "expression": "\"statusNovo\" IN ('PENDENTE', 'APROVADO', 'REJEITADO', 'CANCELADO', 'EM_NEGOCIACAO')",
+                  "name": "AlteracaoAgendamento_statusNovo_check_d6a1c201",
+                  "prefix": "AlteracaoAgendamento_statusNovo_check"
+                }
+              ],
+              "columns": {
+                "agendamentoId": {
+                  "codecId": "pg/int4@1",
+                  "dataType": "pg/int4",
+                  "nullable": false
+                },
+                "autorId": {
+                  "codecId": "pg/int4@1",
+                  "dataType": "pg/int4",
+                  "nullable": false
+                },
+                "criadoEm": {
+                  "codecId": "pg/timestamptz-date@1",
+                  "dataType": "pg/timestamptz",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nullable": false,
+                  "typeParams": {
+                    "precision": 3
+                  }
+                },
+                "dataFimProposta": {
+                  "codecId": "pg/timestamptz-date@1",
+                  "dataType": "pg/timestamptz",
+                  "nullable": true,
+                  "typeParams": {
+                    "precision": 3
+                  }
+                },
+                "dataInicioProposta": {
+                  "codecId": "pg/timestamptz-date@1",
+                  "dataType": "pg/timestamptz",
+                  "nullable": true,
+                  "typeParams": {
+                    "precision": 3
+                  }
+                },
+                "id": {
+                  "codecId": "pg/int4@1",
+                  "dataType": "pg/int4",
+                  "default": {
+                    "expression": "autoincrement()",
+                    "kind": "function"
+                  },
+                  "nullable": false
+                },
+                "justificativa": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": true
+                },
+                "salaPropostaId": {
+                  "codecId": "pg/int4@1",
+                  "dataType": "pg/int4",
+                  "nullable": true
+                },
+                "statusAnterior": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false,
+                  "valueSet": {
+                    "entityKind": "valueSet",
+                    "entityName": "StatusAgendamento",
+                    "namespaceId": "public",
+                    "plane": "storage"
+                  }
+                },
+                "statusNovo": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false,
+                  "valueSet": {
+                    "entityKind": "valueSet",
+                    "entityName": "StatusAgendamento",
+                    "namespaceId": "public",
+                    "plane": "storage"
+                  }
+                }
+              },
+              "foreignKeys": [
+                {
+                  "index": {
+                    "name": "AlteracaoAgendamento_agendamentoId_idx_b943086d"
+                  },
+                  "onDelete": "cascade",
+                  "source": {
+                    "columns": [
+                      "agendamentoId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "AlteracaoAgendamento"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "Agendamento"
+                  }
+                },
+                {
+                  "index": {
+                    "name": "AlteracaoAgendamento_autorId_idx_be130d49"
+                  },
+                  "source": {
+                    "columns": [
+                      "autorId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "AlteracaoAgendamento"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "Usuario"
+                  }
+                }
+              ],
+              "indexes": [
+                {
+                  "columns": [
+                    "agendamentoId"
+                  ],
+                  "name": "AlteracaoAgendamento_agendamentoId_idx_b943086d",
+                  "prefix": "AlteracaoAgendamento_agendamentoId_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "autorId"
+                  ],
+                  "name": "AlteracaoAgendamento_autorId_idx_be130d49",
+                  "prefix": "AlteracaoAgendamento_autorId_idx",
+                  "unique": false
+                }
+              ],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": []
+            },
+            "Aluno": {
+              "columns": {
+                "cursoId": {
+                  "codecId": "pg/int4@1",
+                  "dataType": "pg/int4",
+                  "nullable": false
+                },
+                "id": {
+                  "codecId": "pg/int4@1",
+                  "dataType": "pg/int4",
+                  "default": {
+                    "expression": "autoincrement()",
+                    "kind": "function"
+                  },
+                  "nullable": false
+                },
+                "semestre": {
+                  "codecId": "pg/int4@1",
+                  "dataType": "pg/int4",
+                  "nullable": false
+                },
+                "usuarioId": {
+                  "codecId": "pg/int4@1",
+                  "dataType": "pg/int4",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [
+                {
+                  "index": {
+                    "unique": [
+                      "usuarioId"
+                    ]
+                  },
+                  "onDelete": "cascade",
+                  "source": {
+                    "columns": [
+                      "usuarioId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "Aluno"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "Usuario"
+                  }
+                },
+                {
+                  "index": {
+                    "name": "Aluno_cursoId_idx_d90eb09b"
+                  },
+                  "source": {
+                    "columns": [
+                      "cursoId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "Aluno"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "Curso"
+                  }
+                }
+              ],
+              "indexes": [
+                {
+                  "columns": [
+                    "cursoId"
+                  ],
+                  "name": "Aluno_cursoId_idx_d90eb09b",
+                  "prefix": "Aluno_cursoId_idx",
+                  "unique": false
+                }
+              ],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": [
+                {
+                  "columns": [
+                    "usuarioId"
+                  ]
+                }
+              ]
+            },
+            "Bloco": {
+              "columns": {
+                "descritivo": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false
+                },
+                "id": {
+                  "codecId": "pg/int4@1",
+                  "dataType": "pg/int4",
+                  "default": {
+                    "expression": "autoincrement()",
+                    "kind": "function"
+                  },
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [],
+              "indexes": [],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": []
+            },
+            "Curso": {
+              "columns": {
+                "descritivo": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false
+                },
+                "id": {
+                  "codecId": "pg/int4@1",
+                  "dataType": "pg/int4",
+                  "default": {
+                    "expression": "autoincrement()",
+                    "kind": "function"
+                  },
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [],
+              "indexes": [],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": []
+            },
+            "Equipamento": {
+              "columns": {
+                "descricao": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": true
+                },
+                "descritivo": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false
+                },
+                "id": {
+                  "codecId": "pg/int4@1",
+                  "dataType": "pg/int4",
+                  "default": {
+                    "expression": "autoincrement()",
+                    "kind": "function"
+                  },
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [],
+              "indexes": [],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": []
+            },
+            "Gestor": {
+              "columns": {
+                "id": {
+                  "codecId": "pg/int4@1",
+                  "dataType": "pg/int4",
+                  "default": {
+                    "expression": "autoincrement()",
+                    "kind": "function"
+                  },
+                  "nullable": false
+                },
+                "usuarioId": {
+                  "codecId": "pg/int4@1",
+                  "dataType": "pg/int4",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [
+                {
+                  "index": {
+                    "unique": [
+                      "usuarioId"
+                    ]
+                  },
+                  "onDelete": "cascade",
+                  "source": {
+                    "columns": [
+                      "usuarioId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "Gestor"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "Usuario"
+                  }
+                }
+              ],
+              "indexes": [],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": [
+                {
+                  "columns": [
+                    "usuarioId"
+                  ]
+                }
+              ]
+            },
+            "Notificacao": {
+              "columns": {
+                "criadoEm": {
+                  "codecId": "pg/timestamptz-date@1",
+                  "dataType": "pg/timestamptz",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nullable": false,
+                  "typeParams": {
+                    "precision": 3
+                  }
+                },
+                "id": {
+                  "codecId": "pg/int4@1",
+                  "dataType": "pg/int4",
+                  "default": {
+                    "expression": "autoincrement()",
+                    "kind": "function"
+                  },
+                  "nullable": false
+                },
+                "lida": {
+                  "codecId": "pg/bool@1",
+                  "dataType": "pg/bool",
+                  "default": {
+                    "kind": "literal",
+                    "value": false
+                  },
+                  "nullable": false
+                },
+                "mensagem": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false
+                },
+                "usuarioId": {
+                  "codecId": "pg/int4@1",
+                  "dataType": "pg/int4",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [
+                {
+                  "index": {
+                    "name": "Notificacao_usuarioId_idx_5f01c7d6"
+                  },
+                  "onDelete": "cascade",
+                  "source": {
+                    "columns": [
+                      "usuarioId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "Notificacao"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "Usuario"
+                  }
+                }
+              ],
+              "indexes": [
+                {
+                  "columns": [
+                    "usuarioId"
+                  ],
+                  "name": "Notificacao_usuarioId_idx_5f01c7d6",
+                  "prefix": "Notificacao_usuarioId_idx",
+                  "unique": false
+                }
+              ],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": []
+            },
+            "Professor": {
+              "columns": {
+                "id": {
+                  "codecId": "pg/int4@1",
+                  "dataType": "pg/int4",
+                  "default": {
+                    "expression": "autoincrement()",
+                    "kind": "function"
+                  },
+                  "nullable": false
+                },
+                "usuarioId": {
+                  "codecId": "pg/int4@1",
+                  "dataType": "pg/int4",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [
+                {
+                  "index": {
+                    "unique": [
+                      "usuarioId"
+                    ]
+                  },
+                  "onDelete": "cascade",
+                  "source": {
+                    "columns": [
+                      "usuarioId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "Professor"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "Usuario"
+                  }
+                }
+              ],
+              "indexes": [],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": [
+                {
+                  "columns": [
+                    "usuarioId"
+                  ]
+                }
+              ]
+            },
+            "ProfessorCurso": {
+              "columns": {
+                "cursoId": {
+                  "codecId": "pg/int4@1",
+                  "dataType": "pg/int4",
+                  "nullable": false
+                },
+                "professorId": {
+                  "codecId": "pg/int4@1",
+                  "dataType": "pg/int4",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [
+                {
+                  "index": {
+                    "name": "ProfessorCurso_professorId_idx_f17aa655"
+                  },
+                  "source": {
+                    "columns": [
+                      "professorId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "ProfessorCurso"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "Professor"
+                  }
+                },
+                {
+                  "index": {
+                    "name": "ProfessorCurso_cursoId_idx_d90eb09b"
+                  },
+                  "source": {
+                    "columns": [
+                      "cursoId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "ProfessorCurso"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "Curso"
+                  }
+                }
+              ],
+              "indexes": [
+                {
+                  "columns": [
+                    "cursoId"
+                  ],
+                  "name": "ProfessorCurso_cursoId_idx_d90eb09b",
+                  "prefix": "ProfessorCurso_cursoId_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "professorId"
+                  ],
+                  "name": "ProfessorCurso_professorId_idx_f17aa655",
+                  "prefix": "ProfessorCurso_professorId_idx",
+                  "unique": false
+                }
+              ],
+              "primaryKey": {
+                "columns": [
+                  "professorId",
+                  "cursoId"
+                ]
+              },
+              "uniques": []
+            },
+            "Sala": {
+              "columns": {
+                "blocoId": {
+                  "codecId": "pg/int4@1",
+                  "dataType": "pg/int4",
+                  "nullable": false
+                },
+                "capacidade": {
+                  "codecId": "pg/int4@1",
+                  "dataType": "pg/int4",
+                  "nullable": false
+                },
+                "codigoSvg": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false
+                },
+                "descritivo": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false
+                },
+                "id": {
+                  "codecId": "pg/int4@1",
+                  "dataType": "pg/int4",
+                  "default": {
+                    "expression": "autoincrement()",
+                    "kind": "function"
+                  },
+                  "nullable": false
+                },
+                "tipoSalaId": {
+                  "codecId": "pg/int4@1",
+                  "dataType": "pg/int4",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [
+                {
+                  "index": {
+                    "name": "Sala_blocoId_idx_626a52ab"
+                  },
+                  "source": {
+                    "columns": [
+                      "blocoId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "Sala"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "Bloco"
+                  }
+                },
+                {
+                  "index": {
+                    "name": "Sala_tipoSalaId_idx_ed89907d"
+                  },
+                  "source": {
+                    "columns": [
+                      "tipoSalaId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "Sala"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "TipoSala"
+                  }
+                }
+              ],
+              "indexes": [
+                {
+                  "columns": [
+                    "blocoId"
+                  ],
+                  "name": "Sala_blocoId_idx_626a52ab",
+                  "prefix": "Sala_blocoId_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "tipoSalaId"
+                  ],
+                  "name": "Sala_tipoSalaId_idx_ed89907d",
+                  "prefix": "Sala_tipoSalaId_idx",
+                  "unique": false
+                }
+              ],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": [
+                {
+                  "columns": [
+                    "codigoSvg"
+                  ]
+                }
+              ]
+            },
+            "SalaEquipamento": {
+              "columns": {
+                "equipamentoId": {
+                  "codecId": "pg/int4@1",
+                  "dataType": "pg/int4",
+                  "nullable": false
+                },
+                "id": {
+                  "codecId": "pg/int4@1",
+                  "dataType": "pg/int4",
+                  "default": {
+                    "expression": "autoincrement()",
+                    "kind": "function"
+                  },
+                  "nullable": false
+                },
+                "quantidade": {
+                  "codecId": "pg/int4@1",
+                  "dataType": "pg/int4",
+                  "default": {
+                    "kind": "literal",
+                    "value": 1
+                  },
+                  "nullable": false
+                },
+                "salaId": {
+                  "codecId": "pg/int4@1",
+                  "dataType": "pg/int4",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [
+                {
+                  "index": {
+                    "name": "SalaEquipamento_salaId_idx_e3c4d2be"
+                  },
+                  "onDelete": "cascade",
+                  "source": {
+                    "columns": [
+                      "salaId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "SalaEquipamento"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "Sala"
+                  }
+                },
+                {
+                  "index": {
+                    "name": "SalaEquipamento_equipamentoId_idx_0df27ed0"
+                  },
+                  "onDelete": "cascade",
+                  "source": {
+                    "columns": [
+                      "equipamentoId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "SalaEquipamento"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "Equipamento"
+                  }
+                }
+              ],
+              "indexes": [
+                {
+                  "columns": [
+                    "equipamentoId"
+                  ],
+                  "name": "SalaEquipamento_equipamentoId_idx_0df27ed0",
+                  "prefix": "SalaEquipamento_equipamentoId_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "salaId"
+                  ],
+                  "name": "SalaEquipamento_salaId_idx_e3c4d2be",
+                  "prefix": "SalaEquipamento_salaId_idx",
+                  "unique": false
+                }
+              ],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": []
+            },
+            "SalaSoftware": {
+              "columns": {
+                "salaId": {
+                  "codecId": "pg/int4@1",
+                  "dataType": "pg/int4",
+                  "nullable": false
+                },
+                "softwareId": {
+                  "codecId": "pg/int4@1",
+                  "dataType": "pg/int4",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [
+                {
+                  "index": {
+                    "name": "SalaSoftware_salaId_idx_e3c4d2be"
+                  },
+                  "onDelete": "cascade",
+                  "source": {
+                    "columns": [
+                      "salaId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "SalaSoftware"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "Sala"
+                  }
+                },
+                {
+                  "index": {
+                    "name": "SalaSoftware_softwareId_idx_4d4ec1ee"
+                  },
+                  "onDelete": "cascade",
+                  "source": {
+                    "columns": [
+                      "softwareId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "SalaSoftware"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "Software"
+                  }
+                }
+              ],
+              "indexes": [
+                {
+                  "columns": [
+                    "salaId"
+                  ],
+                  "name": "SalaSoftware_salaId_idx_e3c4d2be",
+                  "prefix": "SalaSoftware_salaId_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "softwareId"
+                  ],
+                  "name": "SalaSoftware_softwareId_idx_4d4ec1ee",
+                  "prefix": "SalaSoftware_softwareId_idx",
+                  "unique": false
+                }
+              ],
+              "primaryKey": {
+                "columns": [
+                  "salaId",
+                  "softwareId"
+                ]
+              },
+              "uniques": []
+            },
+            "Software": {
+              "columns": {
+                "descritivo": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false
+                },
+                "id": {
+                  "codecId": "pg/int4@1",
+                  "dataType": "pg/int4",
+                  "default": {
+                    "expression": "autoincrement()",
+                    "kind": "function"
+                  },
+                  "nullable": false
+                },
+                "versao": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": true
+                }
+              },
+              "foreignKeys": [],
+              "indexes": [],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": []
+            },
+            "TipoSala": {
+              "columns": {
+                "descritivo": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false
+                },
+                "id": {
+                  "codecId": "pg/int4@1",
+                  "dataType": "pg/int4",
+                  "default": {
+                    "expression": "autoincrement()",
+                    "kind": "function"
+                  },
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [],
+              "indexes": [],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": []
+            },
+            "Usuario": {
+              "checks": [
+                {
+                  "expression": "\"tipoUsuario\" IN ('ALUNO', 'PROFESSOR', 'GESTOR')",
+                  "name": "Usuario_tipoUsuario_check_a6182ba9",
+                  "prefix": "Usuario_tipoUsuario_check"
+                }
+              ],
+              "columns": {
+                "cpf": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": true
+                },
+                "email": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false
+                },
+                "emailValidado": {
+                  "codecId": "pg/bool@1",
+                  "dataType": "pg/bool",
+                  "default": {
+                    "kind": "literal",
+                    "value": false
+                  },
+                  "nullable": false
+                },
+                "id": {
+                  "codecId": "pg/int4@1",
+                  "dataType": "pg/int4",
+                  "default": {
+                    "expression": "autoincrement()",
+                    "kind": "function"
+                  },
+                  "nullable": false
+                },
+                "nome": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false
+                },
+                "ra": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false
+                },
+                "senhaHash": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false
+                },
+                "tipoUsuario": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false,
+                  "valueSet": {
+                    "entityKind": "valueSet",
+                    "entityName": "TipoUsuario",
+                    "namespaceId": "public",
+                    "plane": "storage"
+                  }
+                }
+              },
+              "foreignKeys": [],
+              "indexes": [],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": [
+                {
+                  "columns": [
+                    "cpf"
+                  ]
+                },
+                {
+                  "columns": [
+                    "ra"
+                  ]
+                },
+                {
+                  "columns": [
+                    "email"
+                  ]
+                }
+              ]
+            }
+          },
+          "valueSet": {
+            "StatusAgendamento": {
+              "kind": "valueSet",
+              "values": [
+                "PENDENTE",
+                "APROVADO",
+                "REJEITADO",
+                "CANCELADO",
+                "EM_NEGOCIACAO"
+              ]
+            },
+            "TipoUsuario": {
+              "kind": "valueSet",
+              "values": [
+                "ALUNO",
+                "PROFESSOR",
+                "GESTOR"
+              ]
+            }
+          }
+        },
+        "id": "public",
+        "kind": "postgres-schema"
+      }
+    },
+    "storageHash": "ed76ca0ba8b2fa9ae352a873663588fd59a48aa7d025f022741b5b21934c0744"
+  },
+  "capabilities": {
+    "postgres": {
+      "distinctOn": true,
+      "forKeyShare": true,
+      "forNoKeyUpdate": true,
+      "jsonAgg": true,
+      "lateral": true,
+      "limit": true,
+      "orderBy": true,
+      "returning": true
+    },
+    "sql": {
+      "checkConstraint": true,
+      "defaultInInsert": true,
+      "enums": true,
+      "forShare": true,
+      "forUpdate": true,
+      "insertOnConflictSkip": true,
+      "insertOnConflictTarget": true,
+      "insertOnConflictWithoutTarget": true,
+      "lateral": true,
+      "lockNowait": true,
+      "lockOf": true,
+      "lockSkipLocked": true,
+      "returning": true,
+      "scalarList": true
+    }
+  },
+  "extensions": {},
+  "meta": {},
+  "_generated": {
+    "warning": "⚠️  GENERATED FILE - DO NOT EDIT",
+    "message": "This file is automatically generated by \"prisma contract emit\".",
+    "regenerate": "To regenerate, run: prisma contract emit"
+  }
+}

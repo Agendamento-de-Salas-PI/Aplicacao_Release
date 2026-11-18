@@ -1,0 +1,177 @@
+// use prisma-8
+
+enum TipoUsuario {
+  ALUNO
+  PROFESSOR
+  GESTOR
+}
+
+enum StatusAgendamento {
+  PENDENTE
+  APROVADO
+  REJEITADO
+  CANCELADO
+  EM_NEGOCIACAO // Quando há proposta/contraproposta ativa (RF 407 a 410)
+}
+
+model Usuario {
+  id            Int          @id @default(autoincrement())
+  nome          String       // Corrigido de int para String
+  cpf           String?      @unique
+  ra            String       @unique
+  email         String       @unique // Login institucional (RF 101)
+  senhaHash     String       // Criptografia bcrypt/Argon2 (RNF 302)
+  emailValidado Boolean      @default(false) // RF 106
+  tipoUsuario   TipoUsuario
+
+  aluno         Aluno?
+  professor     Professor?
+  gestor        Gestor?
+
+  agendamentos  Agendamento[]
+  alteracoes    AlteracaoAgendamento[] // Suporta propostas tanto de Gestor quanto de Aluno
+  notificacoes  Notificacao[]
+}
+
+model Aluno {
+  id        Int     @id @default(autoincrement())
+  usuarioId Int     @unique
+  cursoId   Int
+  semestre  Int     // Exigido pelo RF 103
+
+  usuario   Usuario @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  curso     Curso   @relation(fields: [cursoId], references: [id])
+}
+
+model Professor {
+  id        Int            @id @default(autoincrement())
+  usuarioId Int            @unique
+  usuario   Usuario        @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  cursos    ProfessorCurso[]
+}
+
+model Gestor {
+  id        Int     @id @default(autoincrement())
+  usuarioId Int     @unique
+  usuario   Usuario @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+}
+
+model Curso {
+  id           Int              @id @default(autoincrement())
+  descritivo   String           // Ex: "DSM", "Sistemas para Internet"
+  alunos       Aluno[]
+  professores  ProfessorCurso[]
+  agendamentos Agendamento[]
+}
+
+model ProfessorCurso {
+  professorId Int
+  cursoId     Int
+  professor   Professor @relation(fields: [professorId], references: [id])
+  curso       Curso     @relation(fields: [cursoId], references: [id])
+
+  @@id([professorId, cursoId])
+}
+
+model Bloco {
+  id         Int    @id @default(autoincrement())
+  descritivo String // Ex: "Bloco A", "Bloco B"
+  salas      Sala[]
+}
+
+model TipoSala {
+  id         Int    @id @default(autoincrement())
+  descritivo String // Ex: "Laboratório de Informática", "Sala de Aula", "Auditório"
+  salas      Sala[]
+}
+
+model Sala {
+  id           Int               @id @default(autoincrement())
+  descritivo   String            // Ex: "Sala 101", "Lab 04"
+  codigoSvg    String            @unique // ID da tag no mapa SVG (Estudo de Viabilidade)
+  capacidade   Int               // Número de cadeiras para filtro (RF 301)
+  blocoId      Int
+  tipoSalaId   Int
+
+  bloco        Bloco             @relation(fields: [blocoId], references: [id])
+  tipoSala     TipoSala          @relation(fields: [tipoSalaId], references: [id])
+  equipamentos SalaEquipamento[]
+  softwares    SalaSoftware[]
+  agendamentos Agendamento[]
+}
+
+model Equipamento {
+  id         Int               @id @default(autoincrement())
+  descritivo String            // Ex: "Computador", "Projetor", "Ar-Condicionado"
+  descricao  String?
+  salas      SalaEquipamento[]
+}
+
+model SalaEquipamento {
+  id            Int         @id @default(autoincrement())
+  salaId        Int
+  equipamentoId Int
+  quantidade    Int         @default(1) // Quantidade presente na sala (RF 202)
+
+  sala          Sala        @relation(fields: [salaId], references: [id], onDelete: Cascade)
+  equipamento   Equipamento @relation(fields: [equipamentoId], references: [id], onDelete: Cascade)
+}
+
+model Software {
+  id         Int            @id @default(autoincrement())
+  descritivo String         // Ex: "VS Code", "Docker", "AutoCAD" (RF 301)
+  versao     String?
+  salas      SalaSoftware[]
+}
+
+model SalaSoftware {
+  salaId     Int
+  softwareId Int
+  sala       Sala     @relation(fields: [salaId], references: [id], onDelete: Cascade)
+  software   Software @relation(fields: [softwareId], references: [id], onDelete: Cascade)
+
+  @@id([salaId, softwareId])
+}
+
+model Agendamento {
+  id          Int                    @id @default(autoincrement())
+  solicitanteId Int                  // Essencial para RF 204 e RF 403 (Prioridade de Professor)
+  salaId      Int?                   // Opcional/Nullable para permitir RF 401 (horário sem sala)
+  cursoId     Int?
+  dataInicio  DateTime
+  dataFim     DateTime
+  motivo      String?
+  status      StatusAgendamento      @default(PENDENTE)
+  criadoEm    DateTime               @default(now())
+
+  solicitante Usuario                @relation(fields: [solicitanteId], references: [id])
+  sala        Sala?                  @relation(fields: [salaId], references: [id])
+  curso       Curso?                 @relation(fields: [cursoId], references: [id])
+  historico   AlteracaoAgendamento[]
+}
+
+model AlteracaoAgendamento {
+  id                 Int               @id @default(autoincrement())
+  agendamentoId      Int
+  autorId            Int               // Pode ser Gestor (RF 407) ou Aluno (RF 409)
+  statusAnterior     StatusAgendamento
+  statusNovo         StatusAgendamento
+  justificativa      String?           // Motivo do cancelamento/proposta (RF 406)
+  salaPropostaId     Int?              // Caso proponha mudança de sala
+  dataInicioProposta DateTime?         // Caso proponha novo horário (RF 407 / RF 409)
+  dataFimProposta    DateTime?
+  criadoEm           DateTime          @default(now())
+
+  agendamento        Agendamento       @relation(fields: [agendamentoId], references: [id], onDelete: Cascade)
+  autor              Usuario           @relation(fields: [autorId], references: [id])
+}
+
+model Notificacao {
+  id        Int      @id @default(autoincrement())
+  usuarioId Int
+  mensagem  String
+  lida      Boolean  @default(false)
+  criadoEm  DateTime @default(now()) // Atende ao RF 501
+
+  usuario   Usuario  @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+}

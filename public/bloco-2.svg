@@ -1,0 +1,31 @@
+<svg width="507" height="980" viewBox="0 0 507 980" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <g id="Bloco-B">
+    <!-- Fundo do Bloco e Corredor Central (x: 204 até 303) -->
+    <rect id="Bg-Bloco-B" class="block-bg" width="507" height="980" fill="#D9D9D9" />
+
+    <!-- ================= 1ª METADE: 1 AUDITÓRIO E 4 LABORATÓRIOS ================= -->
+    <!-- Coluna Esquerda: Auditório na entrada + 1 Laboratório (x="0", width="204") -->
+    <rect id="B-AUD-01" class="room-rect auditorium" x="0" y="0" width="204" height="210" fill="#757575" />
+    <rect id="B-LAB-01" class="room-rect lab" x="0" y="220" width="204" height="130" fill="#757575" />
+
+    <!-- Coluna Direita: 3 Laboratórios (x="303", width="204") -->
+    <rect id="B-LAB-02" class="room-rect lab" x="303" y="0" width="204" height="110" fill="#757575" />
+    <rect id="B-LAB-03" class="room-rect lab" x="303" y="120" width="204" height="110" fill="#757575" />
+    <rect id="B-LAB-04" class="room-rect lab" x="303" y="240" width="204" height="110" fill="#757575" />
+
+    <!-- ================= DIVISÃO CENTRAL: BANHEIROS (Não agendáveis) ================= -->
+    <rect id="B-WC-FEM" class="facility-rect wc" x="0" y="368" width="204" height="80" fill="#9E9E9E" />
+    <rect id="B-WC-MASC" class="facility-rect wc" x="303" y="368" width="204" height="80" fill="#9E9E9E" />
+
+    <!-- ================= 2ª METADE: 6 SALAS DE AULA NORMAIS ================= -->
+    <!-- Coluna Esquerda (3 Salas com dimensões variadas) -->
+    <rect id="B-101" class="room-rect classroom" x="0" y="466" width="204" height="150" fill="#757575" />
+    <rect id="B-102" class="room-rect classroom" x="0" y="626" width="204" height="170" fill="#757575" />
+    <rect id="B-103" class="room-rect classroom" x="0" y="806" width="204" height="174" fill="#757575" />
+
+    <!-- Coluna Direita (3 Salas com dimensões variadas) -->
+    <rect id="B-104" class="room-rect classroom" x="303" y="466" width="204" height="170" fill="#757575" />
+    <rect id="B-105" class="room-rect classroom" x="303" y="646" width="204" height="150" fill="#757575" />
+    <rect id="B-106" class="room-rect classroom" x="303" y="806" width="204" height="174" fill="#757575" />
+  </g>
+</svg>
