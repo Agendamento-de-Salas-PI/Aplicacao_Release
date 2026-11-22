@@ -15,7 +15,7 @@ import {
 import {
   rooms as initialRooms,
   blocks as initialBlocks,
-  initialRequests,
+  generateDynamicMockRequests,
   systemUsers as initialUsers,
   defaultAccounts,
   systemCourses,
@@ -139,7 +139,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<Usuario>(defaultAccounts.aluno);
   const [rooms, setRooms] = useState<Sala[]>(initialRooms);
   const [blocks] = useState<Bloco[]>(initialBlocks);
-  const [requests, setRequests] = useState<Agendamento[]>(initialRequests);
+  const [requests, setRequests] = useState<Agendamento[]>(() =>
+    generateDynamicMockRequests()
+  );
   const [users, setUsers] = useState<Usuario[]>(initialUsers);
   const [toast, setToast] = useState("");
 

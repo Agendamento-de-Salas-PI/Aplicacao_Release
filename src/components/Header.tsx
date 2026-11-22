@@ -18,7 +18,7 @@ export function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
 
-  if (pathname === "/login") {
+  if (pathname === "/login" || pathname === "/registro") {
     return null;
   }
 

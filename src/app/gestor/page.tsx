@@ -56,6 +56,9 @@ export default function ManagerScreen() {
 
   // Estados da aba de Solicitações
   const [tab, setTab] = useState<"Pendentes" | "Aprovados" | "Rejeitados">("Pendentes");
+  const [selectedMonth, setSelectedMonth] = useState<string>(() =>
+    getTodayLocalStr().slice(0, 7)
+  );
   const [search, setSearch] = useState("");
   const [reasonFor, setReasonFor] = useState<number | null>(null);
   const [rescheduleFor, setRescheduleFor] = useState<number | null>(null);
@@ -95,8 +98,42 @@ export default function ManagerScreen() {
   const [editUserCurso, setEditUserCurso] = useState("DSM");
   const [editUserSemestre, setEditUserSemestre] = useState(1);
 
-  // Filtragem de Solicitações a partir do estado global `requests`
-  const filteredRequests = requests.filter((req) => {
+  // Opções de meses dinâmicos (mês atual, próximo mês, meses seguintes e meses presentes nos agendamentos)
+  const availableMonths = (() => {
+    const now = new Date();
+    const set = new Set<string>();
+    for (let offset = -1; offset <= 4; offset++) {
+      const d = new Date(now.getFullYear(), now.getMonth() + offset, 1);
+      const ym = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+      set.add(ym);
+    }
+    requests.forEach((req) => {
+      const ym = String(req.dataInicio).slice(0, 7);
+      if (/^\d{4}-\d{2}$/.test(ym)) set.add(ym);
+    });
+    return Array.from(set).sort();
+  })();
+
+  const formatMonthLabel = (ym: string) => {
+    if (ym === "ALL") return "Todos os meses";
+    const [year, month] = ym.split("-").map(Number);
+    const d = new Date(Date.UTC(year, month - 1, 1));
+    const formatted = d.toLocaleDateString("pt-BR", {
+      month: "long",
+      year: "numeric",
+      timeZone: "UTC",
+    });
+    return formatted.charAt(0).toUpperCase() + formatted.slice(1);
+  };
+
+  // Filtragem de Solicitações pelo mês selecionado (Meta 7)
+  const monthFilteredRequests = requests.filter((req) => {
+    if (selectedMonth === "ALL") return true;
+    return String(req.dataInicio).slice(0, 7) === selectedMonth;
+  });
+
+  // Filtragem de Solicitações a partir de `monthFilteredRequests`
+  const filteredRequests = monthFilteredRequests.filter((req) => {
     const matchesSearch =
       req.solicitante.nome.toLowerCase().includes(search.toLowerCase()) ||
       (req.sala?.descritivo ?? "Sem sala").toLowerCase().includes(search.toLowerCase()) ||
@@ -123,10 +160,15 @@ export default function ManagerScreen() {
       .includes(userSearch.toLowerCase())
   );
 
-  const pendentesCount = requests.filter(
+  const pendentesCount = monthFilteredRequests.filter(
     (r) => r.status === "PENDENTE" || r.status === "EM_NEGOCIACAO"
   ).length;
-  const aprovadosCount = requests.filter((r) => r.status === "APROVADO").length;
+  const aprovadosCount = monthFilteredRequests.filter(
+    (r) => r.status === "APROVADO"
+  ).length;
+  const rejeitadosCount = monthFilteredRequests.filter(
+    (r) => r.status === "REJEITADO" || r.status === "CANCELADO"
+  ).length;
   const occupiedRoomsCount = rooms.filter(
     (r) => r.statusOcupacao === "Ocupada"
   ).length;
@@ -279,13 +321,29 @@ export default function ManagerScreen() {
               Analise solicitações, edite a infraestrutura dos blocos/salas e gerencie usuários.
             </p>
           </div>
-          <button
-            type="button"
-            onClick={() => notify("Período ativo: Maio de 2026")}
-            className="inline-flex items-center gap-2 self-start rounded border border-[#d4d7da] bg-white px-3.5 py-2 text-xs font-bold text-[#4c5158] hover:bg-gray-50"
-          >
-            <CalendarDays size={16} /> Maio de 2026 <ChevronDown size={15} />
-          </button>
+          <div className="relative inline-flex items-center self-start">
+            <CalendarDays
+              size={16}
+              className="pointer-events-none absolute left-3.5 text-[#b20d19]"
+            />
+            <select
+              aria-label="Filtrar agendamentos por mês"
+              value={selectedMonth}
+              onChange={(e) => setSelectedMonth(e.target.value)}
+              className="appearance-none rounded border border-[#d4d7da] bg-white py-2 pl-9 pr-8 text-xs font-bold text-[#4c5158] outline-none transition hover:bg-gray-50 focus:border-[#b20d19]"
+            >
+              {availableMonths.map((ym) => (
+                <option key={ym} value={ym}>
+                  {formatMonthLabel(ym)}
+                </option>
+              ))}
+              <option value="ALL">Todos os meses</option>
+            </select>
+            <ChevronDown
+              size={15}
+              className="pointer-events-none absolute right-2.5 text-[#4c5158]"
+            />
+          </div>
         </div>
 
         {/* Cards de Estatísticas Reativas */}
@@ -417,6 +475,11 @@ export default function ManagerScreen() {
                       {item === "Aprovados" && (
                         <span className="ml-2 bg-[#1c6b3d] px-1.5 py-0.5 text-[10px] text-white">
                           {aprovadosCount}
+                        </span>
+                      )}
+                      {item === "Rejeitados" && (
+                        <span className="ml-2 bg-[#6d7175] px-1.5 py-0.5 text-[10px] text-white">
+                          {rejeitadosCount}
                         </span>
                       )}
                     </button>
