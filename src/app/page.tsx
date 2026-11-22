@@ -7,6 +7,7 @@ import {
   getTodayLocalStr,
   isTimeSlotPast,
   getFirstAvailableFutureSlot,
+  systemDisciplinas,
 } from "@/data/mockData";
 import { Icon } from "@/components/Icon";
 import { useApp } from "@/context/AppContext";
@@ -50,6 +51,13 @@ export default function BookingPage() {
   // Modal de agendamento sem sala específica (RF 401)
   const [showNoRoomModal, setShowNoRoomModal] = useState(false);
   const [noRoomMotivo, setNoRoomMotivo] = useState("Monitoria / Estudo em grupo");
+  const professorDisciplinas =
+    user.professor?.disciplinas && user.professor.disciplinas.length > 0
+      ? user.professor.disciplinas
+      : systemDisciplinas;
+  const [noRoomDisciplinaId, setNoRoomDisciplinaId] = useState<number>(
+    () => professorDisciplinas[0]?.id ?? 1
+  );
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
 
   const isUserInactive = !user.emailValidado || user.aluno?.ativo === false;
@@ -239,6 +247,8 @@ export default function BookingPage() {
       date: filters.date,
       timeSlot: filters.timeSlot,
       motivo: fullMotivo,
+      disciplinaId:
+        user.tipoUsuario === "PROFESSOR" ? noRoomDisciplinaId : null,
       requisitosFiltro: {
         minCadeiras: filters.seats,
         hasTvOrProjector: filters.hasTvOrProjector,
@@ -317,6 +327,9 @@ export default function BookingPage() {
               "Conta inativa: usuários inativados não podem solicitar agendamentos."
             );
             return;
+          }
+          if (user.tipoUsuario === "PROFESSOR") {
+            setNoRoomDisciplinaId(professorDisciplinas[0]?.id ?? 1);
           }
           setShowNoRoomModal(true);
         }}
@@ -451,39 +464,41 @@ export default function BookingPage() {
           </div>
         </div>
 
-        {view === "map" ? (
-          <FloorPlan
-            block={activeBlock}
-            rooms={blockRooms}
-            matchedRoomIds={matchedRoomIds}
-            selected={selectedRoom}
-            onSelect={(r) => {
-              setSelectedRoomId(r.id);
-              setShowDetails(true);
-            }}
-          />
-        ) : (
-          <RoomGrid
-            rooms={filteredBlockRooms}
-            selected={selectedRoom}
-            onSelect={(r) => {
-              setSelectedRoomId(r.id);
-              setShowDetails(true);
-            }}
-            onResetFilters={handleResetFilters}
-          />
-        )}
+        <div className="map-stage">
+          {view === "map" ? (
+            <FloorPlan
+              block={activeBlock}
+              rooms={blockRooms}
+              matchedRoomIds={matchedRoomIds}
+              selected={selectedRoom}
+              onSelect={(r) => {
+                setSelectedRoomId(r.id);
+                setShowDetails(true);
+              }}
+            />
+          ) : (
+            <RoomGrid
+              rooms={filteredBlockRooms}
+              selected={selectedRoom}
+              onSelect={(r) => {
+                setSelectedRoomId(r.id);
+                setShowDetails(true);
+              }}
+              onResetFilters={handleResetFilters}
+            />
+          )}
 
-        {!showDetails && selectedRoom && (
-          <button
-            type="button"
-            className="open-details"
-            onClick={() => setShowDetails(true)}
-          >
-            Ver {selectedRoom.descritivo}
-            <Icon name="chevron" size={17} />
-          </button>
-        )}
+          {!showDetails && selectedRoom && (
+            <button
+              type="button"
+              className="open-details"
+              onClick={() => setShowDetails(true)}
+            >
+              Ver {selectedRoom.descritivo}
+              <Icon name="chevron" size={17} />
+            </button>
+          )}
+        </div>
       </section>
 
       {showDetails && selectedRoom && (
@@ -535,6 +550,30 @@ export default function BookingPage() {
                 {buildFilterRequirementsSummary()}
               </span>
             </div>
+
+            {user.tipoUsuario === "PROFESSOR" && (
+              <div className="mt-3">
+                <label className="field-label" htmlFor="noroom-disciplina">
+                  Disciplina ministrada (Obrigatório · RF 401/403)
+                </label>
+                <select
+                  id="noroom-disciplina"
+                  required
+                  value={noRoomDisciplinaId}
+                  onChange={(e) =>
+                    setNoRoomDisciplinaId(Number(e.target.value))
+                  }
+                  className="auth-input w-full"
+                >
+                  {professorDisciplinas.map((disc) => (
+                    <option key={disc.id} value={disc.id}>
+                      {disc.descritivo}
+                      {disc.curso ? ` — ${disc.curso.descritivo}` : ""}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
 
             <label className="field-label" htmlFor="noroom-motivo">
               Finalidade / Descrição da atividade

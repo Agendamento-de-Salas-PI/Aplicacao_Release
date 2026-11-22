@@ -19,6 +19,13 @@ export interface Curso {
   descritivo: string;
 }
 
+export interface Disciplina {
+  id: number;
+  descritivo: string;
+  cursoId: number;
+  curso?: Curso;
+}
+
 export interface SvgRectElement {
   id: string;
   x?: number;
@@ -86,7 +93,7 @@ export interface Aluno {
 export interface Professor {
   id: number;
   usuarioId: number;
-  cursos?: { professorId: number; cursoId: number; curso: Curso }[];
+  disciplinas?: Disciplina[];
 }
 
 export interface Gestor {
@@ -153,6 +160,7 @@ export interface Agendamento {
   solicitanteId: number;
   salaId: number | null;
   cursoId?: number | null;
+  disciplinaId?: number | null;
   dataInicio: string | Date;
   dataFim: string | Date;
   motivo?: string | null;
@@ -161,6 +169,7 @@ export interface Agendamento {
   solicitante: Usuario;
   sala?: Sala | null;
   curso?: Curso | null;
+  disciplina?: Disciplina | null;
   historico?: AlteracaoAgendamento[];
   requisitosFiltro?: RequisitosFiltroAgendamento | null;
   salaProposta?: Sala | null;

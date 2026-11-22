@@ -193,7 +193,7 @@ export default function FloorPlan({
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
     >
-      <div className="compass">
+      <div className="compass" aria-hidden="true">
         <span>N</span>
         <Icon name="arrow" size={16} />
       </div>

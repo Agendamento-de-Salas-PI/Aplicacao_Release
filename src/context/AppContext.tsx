@@ -11,6 +11,7 @@ import {
   type SalaEquipamento,
   type SalaSoftware,
   type RequisitosFiltroAgendamento,
+  type Disciplina,
 } from "@/types";
 import {
   rooms as initialRooms,
@@ -19,6 +20,7 @@ import {
   systemUsers as initialUsers,
   defaultAccounts,
   systemCourses,
+  systemDisciplinas,
   OFFICIAL_TIME_SLOTS,
   formatIntervaloHorario,
   getTodayLocalStr,
@@ -34,6 +36,7 @@ export interface RegisterUserData {
   tipoUsuario: TipoUsuario;
   cursoDesc?: string;
   semestre?: number;
+  disciplinaIds?: number[];
 }
 
 export interface CreateBookingData {
@@ -42,6 +45,7 @@ export interface CreateBookingData {
   timeSlot: string; // Ex.: "07:45 — 09:25"
   motivo: string;
   cursoDesc?: string;
+  disciplinaId?: number | null;
   requisitosFiltro?: RequisitosFiltroAgendamento | null;
 }
 
@@ -75,7 +79,11 @@ type AppContextType = {
   ) => void;
   updateUserData: (
     userId: number,
-    updatedFields: Partial<Usuario> & { cursoDesc?: string; semestre?: number }
+    updatedFields: Partial<Usuario> & {
+      cursoDesc?: string;
+      semestre?: number;
+      disciplinaIds?: number[];
+    }
   ) => void;
   notify: (text: string) => void;
 };
@@ -211,13 +219,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
           ? {
               id: nextId,
               usuarioId: nextId,
-              cursos: [
-                {
-                  professorId: nextId,
-                  cursoId: matchedCourse.id,
-                  curso: matchedCourse,
-                },
-              ],
+              disciplinas:
+                data.disciplinaIds && data.disciplinaIds.length > 0
+                  ? systemDisciplinas.filter((d) =>
+                      data.disciplinaIds!.includes(d.id)
+                    )
+                  : [systemDisciplinas[0], systemDisciplinas[1]],
             }
           : null,
       gestor:
@@ -293,9 +300,21 @@ export function AppProvider({ children }: { children: ReactNode }) {
     const initialStatus: StatusAgendamento =
       user.tipoUsuario === "GESTOR" ? "APROVADO" : "PENDENTE";
 
+    const matchedDisciplina: Disciplina | null =
+      user.tipoUsuario === "PROFESSOR"
+        ? (data.disciplinaId
+            ? (user.professor?.disciplinas?.find(
+                (d) => d.id === data.disciplinaId
+              ) ??
+              systemDisciplinas.find((d) => d.id === data.disciplinaId) ??
+              null)
+            : (user.professor?.disciplinas?.[0] ?? systemDisciplinas[0]))
+        : null;
+
     const userCourse =
+      matchedDisciplina?.curso ??
       user.aluno?.curso ??
-      user.professor?.cursos?.[0]?.curso ??
+      user.professor?.disciplinas?.[0]?.curso ??
       (data.cursoDesc
         ? systemCourses.find((c) => c.descritivo === data.cursoDesc) ?? {
             id: 1,
@@ -308,6 +327,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       solicitanteId: user.id,
       salaId: targetRoom ? targetRoom.id : null,
       cursoId: userCourse?.id ?? 1,
+      disciplinaId: matchedDisciplina ? matchedDisciplina.id : null,
       dataInicio: inicio,
       dataFim: fim,
       motivo: data.motivo.trim() || "Atividade acadêmica",
@@ -316,6 +336,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       solicitante: user,
       sala: targetRoom,
       curso: userCourse,
+      disciplina: matchedDisciplina,
       historico: [],
       requisitosFiltro: data.requisitosFiltro ?? null,
       semSalaOriginal: data.salaId === null,
@@ -567,7 +588,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const updateUserData = (
     userId: number,
-    updatedFields: Partial<Usuario> & { cursoDesc?: string; semestre?: number }
+    updatedFields: Partial<Usuario> & {
+      cursoDesc?: string;
+      semestre?: number;
+      disciplinaIds?: number[];
+    }
   ) => {
     setUsers((prev) =>
       prev.map((u) => {
@@ -580,6 +605,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
                 c.descritivo.toLowerCase() === updatedFields.cursoDesc!.toLowerCase()
             ) ?? { id: 1, descritivo: updatedFields.cursoDesc }
           : u.aluno?.curso ?? systemCourses[0];
+
+        const nextDisciplinas = updatedFields.disciplinaIds
+          ? systemDisciplinas.filter((d) =>
+              updatedFields.disciplinaIds!.includes(d.id)
+            )
+          : u.professor?.disciplinas ?? [systemDisciplinas[0]];
 
         const updatedUser: Usuario = {
           ...u,
@@ -596,6 +627,17 @@ export function AppProvider({ children }: { children: ReactNode }) {
                   ativo: updatedFields.emailValidado ?? u.emailValidado,
                 }
               : u.aluno,
+          professor:
+            nextTipo === "PROFESSOR"
+              ? {
+                  id: u.professor?.id ?? u.id,
+                  usuarioId: u.id,
+                  disciplinas:
+                    nextDisciplinas.length > 0
+                      ? nextDisciplinas
+                      : [systemDisciplinas[0]],
+                }
+              : u.professor,
         };
 
         if (user.id === userId) {

@@ -23,6 +23,7 @@ import {
   formatUsuarioDetalhe,
   formatEquipamentoItem,
   systemCourses,
+  systemDisciplinas,
   OFFICIAL_TIME_SLOTS,
   getTodayLocalStr,
   isTimeSlotPast,
@@ -97,6 +98,9 @@ export default function ManagerScreen() {
   const [editUserValidado, setEditUserValidado] = useState(true);
   const [editUserCurso, setEditUserCurso] = useState("DSM");
   const [editUserSemestre, setEditUserSemestre] = useState(1);
+  const [editUserDisciplinaIds, setEditUserDisciplinaIds] = useState<number[]>(
+    []
+  );
 
   // Opções de meses dinâmicos (mês atual, próximo mês, meses seguintes e meses presentes nos agendamentos)
   const availableMonths = (() => {
@@ -137,7 +141,8 @@ export default function ManagerScreen() {
     const matchesSearch =
       req.solicitante.nome.toLowerCase().includes(search.toLowerCase()) ||
       (req.sala?.descritivo ?? "Sem sala").toLowerCase().includes(search.toLowerCase()) ||
-      (req.motivo ?? "").toLowerCase().includes(search.toLowerCase());
+      (req.motivo ?? "").toLowerCase().includes(search.toLowerCase()) ||
+      (req.disciplina?.descritivo ?? "").toLowerCase().includes(search.toLowerCase());
 
     if (!matchesSearch) return false;
     if (tab === "Pendentes")
@@ -284,6 +289,9 @@ export default function ManagerScreen() {
     setEditUserValidado(person.emailValidado);
     setEditUserCurso(person.aluno?.curso?.descritivo ?? "DSM");
     setEditUserSemestre(person.aluno?.semestre ?? 1);
+    setEditUserDisciplinaIds(
+      person.professor?.disciplinas?.map((d) => d.id) ?? [1]
+    );
   };
 
   const handleSaveUser = (e: React.FormEvent) => {
@@ -298,6 +306,8 @@ export default function ManagerScreen() {
       emailValidado: editUserValidado,
       cursoDesc: editUserCurso,
       semestre: editUserSemestre,
+      disciplinaIds:
+        editUserRole === "PROFESSOR" ? editUserDisciplinaIds : undefined,
     });
 
     notify(`Cadastro de ${editUserName} atualizado com sucesso!`);
@@ -589,6 +599,14 @@ export default function ManagerScreen() {
                       </div>
 
                       <div>
+                        {request.disciplina && (
+                          <span className="mb-1 inline-flex items-center rounded bg-[#f6e6e7] px-2 py-0.5 text-[10px] font-extrabold text-[#b20d19]">
+                            Disciplina: {request.disciplina.descritivo}
+                            {request.disciplina.curso
+                              ? ` (${request.disciplina.curso.descritivo})`
+                              : ""}
+                          </span>
+                        )}
                         <p className="text-xs leading-relaxed text-[#5e6266]">
                           {request.motivo ?? "Atividade acadêmica"}
                         </p>
@@ -1522,6 +1540,25 @@ export default function ManagerScreen() {
                         : "Inativo"}
                     </dd>
                   </div>
+                  {selectedUser.tipoUsuario === "PROFESSOR" &&
+                    selectedUser.professor?.disciplinas && (
+                      <div className="py-3">
+                        <dt className="mb-1.5 text-[#797e85]">
+                          Disciplinas ministradas
+                        </dt>
+                        <dd className="flex flex-wrap gap-1.5">
+                          {selectedUser.professor.disciplinas.map((d) => (
+                            <span
+                              key={d.id}
+                              className="rounded bg-[#f6e6e7] px-2 py-0.5 text-[10px] font-bold text-[#b20d19]"
+                            >
+                              {d.descritivo}
+                              {d.curso ? ` (${d.curso.descritivo})` : ""}
+                            </span>
+                          ))}
+                        </dd>
+                      </div>
+                    )}
                 </dl>
 
                 <div className="flex justify-end gap-2">
@@ -1630,6 +1667,44 @@ export default function ManagerScreen() {
                         }
                         className="w-full rounded border border-[#cfd2d6] px-3 py-2"
                       />
+                    </div>
+                  </div>
+                )}
+
+                {editUserRole === "PROFESSOR" && (
+                  <div>
+                    <label className="mb-1 block font-bold text-[#40444b]">
+                      Disciplinas ministradas
+                    </label>
+                    <div className="max-h-36 space-y-1.5 overflow-y-auto rounded border border-[#cfd2d6] p-2.5">
+                      {systemDisciplinas.map((disc) => {
+                        const checked = editUserDisciplinaIds.includes(disc.id);
+                        return (
+                          <label
+                            key={disc.id}
+                            className="flex items-center gap-2 text-[11px] font-semibold text-[#31353a]"
+                          >
+                            <input
+                              type="checkbox"
+                              checked={checked}
+                              onChange={(e) => {
+                                if (e.target.checked) {
+                                  setEditUserDisciplinaIds((prev) => [
+                                    ...prev,
+                                    disc.id,
+                                  ]);
+                                } else {
+                                  setEditUserDisciplinaIds((prev) =>
+                                    prev.filter((id) => id !== disc.id)
+                                  );
+                                }
+                              }}
+                            />
+                            {disc.descritivo}
+                            {disc.curso ? ` (${disc.curso.descritivo})` : ""}
+                          </label>
+                        );
+                      })}
                     </div>
                   </div>
                 )}

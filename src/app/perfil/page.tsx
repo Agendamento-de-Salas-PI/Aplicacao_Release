@@ -164,6 +164,22 @@ export default function ProfilePage() {
                     <strong>{user.aluno.semestre}º Semestre</strong>
                   </div>
                 )}
+                {user.tipoUsuario === "PROFESSOR" &&
+                  user.professor?.disciplinas &&
+                  user.professor.disciplinas.length > 0 && (
+                    <div className="sm:col-span-2">
+                      <span>Disciplinas ministradas</span>
+                      <strong>
+                        {user.professor.disciplinas
+                          .map((d) =>
+                            d.curso
+                              ? `${d.descritivo} (${d.curso.descritivo})`
+                              : d.descritivo
+                          )
+                          .join(" · ")}
+                      </strong>
+                    </div>
+                  )}
               </div>
             )}
           </div>
@@ -183,9 +199,19 @@ export default function ProfilePage() {
                     className="flex flex-wrap items-center justify-between gap-3 rounded border border-[#dfe1e4] bg-[#fafafb] p-3 text-xs"
                   >
                     <div>
-                      <strong className="text-[#202124]">
-                        {req.sala?.descritivo ?? "Horário sem sala específica (RF 401)"}
-                      </strong>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <strong className="text-[#202124]">
+                          {req.sala?.descritivo ?? "Horário sem sala específica (RF 401)"}
+                        </strong>
+                        {req.disciplina && (
+                          <span className="rounded bg-[#f6e6e7] px-2 py-0.5 text-[10px] font-extrabold text-[#b20d19]">
+                            {req.disciplina.descritivo}
+                            {req.disciplina.curso
+                              ? ` · ${req.disciplina.curso.descritivo}`
+                              : ""}
+                          </span>
+                        )}
+                      </div>
                       <span className="mt-0.5 block text-[11px] text-[#6d7175]">
                         {formatDataCurta(req.dataInicio)} ·{" "}
                         {formatIntervaloHorario(req.dataInicio, req.dataFim)} —{" "}

@@ -8,6 +8,7 @@ import {
   type StatusAgendamento,
   type SalaEquipamento,
   type Curso,
+  type Disciplina,
 } from "@/types";
 
 export type {
@@ -42,8 +43,14 @@ export function formatUsuarioDetalhe(u: Usuario): string {
   if (u.tipoUsuario === "ALUNO" && u.aluno) {
     return `${u.aluno.curso?.descritivo ?? "Curso"} · ${u.aluno.semestre}º semestre`;
   }
-  if (u.tipoUsuario === "PROFESSOR" && u.professor?.cursos?.length) {
-    return u.professor.cursos.map((c) => c.curso.descritivo).join(", ");
+  if (u.tipoUsuario === "PROFESSOR" && u.professor?.disciplinas?.length) {
+    return u.professor.disciplinas
+      .map((d) =>
+        d.curso?.descritivo
+          ? `${d.descritivo} (${d.curso.descritivo})`
+          : d.descritivo
+      )
+      .join(", ");
   }
   return "Administração · FATEC Jahu";
 }
@@ -143,6 +150,69 @@ export const systemCourses: Curso[] = [
   { id: 4, descritivo: "Logística" },
   { id: 5, descritivo: "Meio Ambiente" },
   { id: 6, descritivo: "Construção Naval" },
+];
+
+export const systemDisciplinas: Disciplina[] = [
+  {
+    id: 1,
+    descritivo: "Engenharia de Software II",
+    cursoId: 1,
+    curso: { id: 1, descritivo: "DSM" },
+  },
+  {
+    id: 2,
+    descritivo: "Banco de Dados Relacional",
+    cursoId: 1,
+    curso: { id: 1, descritivo: "DSM" },
+  },
+  {
+    id: 3,
+    descritivo: "Algoritmos e Lógica de Programação",
+    cursoId: 1,
+    curso: { id: 1, descritivo: "DSM" },
+  },
+  {
+    id: 4,
+    descritivo: "DevOps e Integração Contínua",
+    cursoId: 1,
+    curso: { id: 1, descritivo: "DSM" },
+  },
+  {
+    id: 5,
+    descritivo: "Programação para Dispositivos Móveis",
+    cursoId: 2,
+    curso: { id: 2, descritivo: "GTI" },
+  },
+  {
+    id: 6,
+    descritivo: "Governança e Gestão de TI",
+    cursoId: 2,
+    curso: { id: 2, descritivo: "GTI" },
+  },
+  {
+    id: 7,
+    descritivo: "Desenvolvimento Web Full Stack",
+    cursoId: 1,
+    curso: { id: 1, descritivo: "DSM" },
+  },
+  {
+    id: 8,
+    descritivo: "Segurança da Informação",
+    cursoId: 2,
+    curso: { id: 2, descritivo: "GTI" },
+  },
+  {
+    id: 9,
+    descritivo: "Logística Portuária e Modais",
+    cursoId: 4,
+    curso: { id: 4, descritivo: "Logística" },
+  },
+  {
+    id: 10,
+    descritivo: "Gestão da Cadeia de Suprimentos",
+    cursoId: 4,
+    curso: { id: 4, descritivo: "Logística" },
+  },
 ];
 
 // ==========================================
@@ -1036,12 +1106,11 @@ export const defaultAccounts: {
     professor: {
       id: 1,
       usuarioId: 2,
-      cursos: [
-        {
-          professorId: 1,
-          cursoId: 1,
-          curso: { id: 1, descritivo: "DSM" },
-        },
+      disciplinas: [
+        systemDisciplinas[0], // Engenharia de Software II (DSM)
+        systemDisciplinas[1], // Banco de Dados Relacional (DSM)
+        systemDisciplinas[2], // Algoritmos e Lógica de Programação (DSM)
+        systemDisciplinas[3], // DevOps e Integração Contínua (DSM)
       ],
     },
   },
@@ -1096,12 +1165,9 @@ export const systemUsers: Usuario[] = [
     professor: {
       id: 2,
       usuarioId: 4,
-      cursos: [
-        {
-          professorId: 2,
-          cursoId: 2,
-          curso: { id: 2, descritivo: "GTI" },
-        },
+      disciplinas: [
+        systemDisciplinas[4], // Programação para Dispositivos Móveis (GTI)
+        systemDisciplinas[5], // Governança e Gestão de TI (GTI)
       ],
     },
   },
@@ -1167,17 +1233,9 @@ export const systemUsers: Usuario[] = [
     professor: {
       id: 3,
       usuarioId: 8,
-      cursos: [
-        {
-          professorId: 3,
-          cursoId: 1,
-          curso: { id: 1, descritivo: "DSM" },
-        },
-        {
-          professorId: 3,
-          cursoId: 2,
-          curso: { id: 2, descritivo: "GTI" },
-        },
+      disciplinas: [
+        systemDisciplinas[6], // Desenvolvimento Web Full Stack (DSM)
+        systemDisciplinas[7], // Segurança da Informação (GTI)
       ],
     },
   },
@@ -1226,12 +1284,9 @@ export const systemUsers: Usuario[] = [
     professor: {
       id: 4,
       usuarioId: 11,
-      cursos: [
-        {
-          professorId: 4,
-          cursoId: 4,
-          curso: { id: 4, descritivo: "Logística" },
-        },
+      disciplinas: [
+        systemDisciplinas[8], // Logística Portuária e Modais (Logística)
+        systemDisciplinas[9], // Gestão da Cadeia de Suprimentos (Logística)
       ],
     },
   },
@@ -1386,6 +1441,7 @@ export function generateDynamicMockRequests(now: Date = new Date()): Agendamento
       solicitanteId: 2,
       salaId: 1,
       cursoId: 1,
+      disciplinaId: 4,
       dataInicio: s1.inicio,
       dataFim: s1.fim,
       motivo: "Aula prática de Containerização e DevOps",
@@ -1394,6 +1450,7 @@ export function generateDynamicMockRequests(now: Date = new Date()): Agendamento
       solicitante: findUser(2), // Marina Prado (PROFESSOR)
       sala: rooms[0], // Lab. 01
       curso: { id: 1, descritivo: "DSM" },
+      disciplina: systemDisciplinas[3], // DevOps e Integração Contínua
     },
     {
       id: 2,
@@ -1414,6 +1471,7 @@ export function generateDynamicMockRequests(now: Date = new Date()): Agendamento
       solicitanteId: 2,
       salaId: 9,
       cursoId: 1,
+      disciplinaId: 3,
       dataInicio: s3.inicio,
       dataFim: s3.fim,
       motivo: "Algoritmos e Lógica de Programação",
@@ -1422,12 +1480,14 @@ export function generateDynamicMockRequests(now: Date = new Date()): Agendamento
       solicitante: findUser(2),
       sala: rooms[8], // Sala 104
       curso: { id: 1, descritivo: "DSM" },
+      disciplina: systemDisciplinas[2], // Algoritmos e Lógica de Programação
     },
     {
       id: 4,
       solicitanteId: 4,
       salaId: 13,
       cursoId: 2,
+      disciplinaId: 5,
       dataInicio: s3.inicio,
       dataFim: s3.fim,
       motivo: "Programação para Dispositivos Móveis",
@@ -1436,6 +1496,7 @@ export function generateDynamicMockRequests(now: Date = new Date()): Agendamento
       solicitante: findUser(4), // Carla Santos (PROFESSOR)
       sala: rooms[12], // Lab. 05
       curso: { id: 2, descritivo: "GTI" },
+      disciplina: systemDisciplinas[4], // Programação para Dispositivos Móveis
     },
     {
       id: 5,
@@ -1466,6 +1527,7 @@ export function generateDynamicMockRequests(now: Date = new Date()): Agendamento
       solicitanteId: 8,
       salaId: null,
       cursoId: 1,
+      disciplinaId: 7,
       dataInicio: s5.inicio,
       dataFim: s5.fim,
       motivo:
@@ -1475,6 +1537,7 @@ export function generateDynamicMockRequests(now: Date = new Date()): Agendamento
       solicitante: findUser(8), // Eduardo Almeida (PROFESSOR)
       sala: null,
       curso: { id: 1, descritivo: "DSM" },
+      disciplina: systemDisciplinas[6], // Desenvolvimento Web Full Stack
       semSalaOriginal: true,
       requisitosFiltro: {
         minCadeiras: 28,
@@ -1490,6 +1553,7 @@ export function generateDynamicMockRequests(now: Date = new Date()): Agendamento
       solicitanteId: 4,
       salaId: 12,
       cursoId: 2,
+      disciplinaId: 6,
       dataInicio: s6.inicio,
       dataFim: s6.fim,
       motivo: "Palestra de Governança e Gestão de TI",
@@ -1498,6 +1562,7 @@ export function generateDynamicMockRequests(now: Date = new Date()): Agendamento
       solicitante: findUser(4), // Carla Santos (PROFESSOR)
       sala: rooms[11], // Auditório 01 (Bloco 2)
       curso: { id: 2, descritivo: "GTI" },
+      disciplina: systemDisciplinas[5], // Governança e Gestão de TI
     },
     {
       id: 8,
@@ -1564,6 +1629,7 @@ export function generateDynamicMockRequests(now: Date = new Date()): Agendamento
       solicitanteId: 11,
       salaId: 5,
       cursoId: 4,
+      disciplinaId: 9,
       dataInicio: s10.inicio,
       dataFim: s10.fim,
       motivo: "Workshop de Logística Portuária e Modais",
@@ -1572,6 +1638,7 @@ export function generateDynamicMockRequests(now: Date = new Date()): Agendamento
       solicitante: findUser(11), // Ricardo Mendes (PROFESSOR)
       sala: rooms[4], // Auditório 01 (Bloco 1)
       curso: { id: 4, descritivo: "Logística" },
+      disciplina: systemDisciplinas[8], // Logística Portuária e Modais
     },
     {
       id: 12,
@@ -1656,6 +1723,7 @@ export function generateDynamicMockRequests(now: Date = new Date()): Agendamento
       solicitanteId: 8,
       salaId: 14,
       cursoId: 1,
+      disciplinaId: 7,
       dataInicio: s15.inicio,
       dataFim: s15.fim,
       motivo: "Mentoria de Arquitetura de Microsserviços",
@@ -1664,6 +1732,7 @@ export function generateDynamicMockRequests(now: Date = new Date()): Agendamento
       solicitante: findUser(8), // Eduardo Almeida (PROFESSOR)
       sala: rooms[13], // Lab. 06
       curso: { id: 1, descritivo: "DSM" },
+      disciplina: systemDisciplinas[6], // Desenvolvimento Web Full Stack
     },
     {
       id: 17,
@@ -1714,6 +1783,7 @@ export function generateDynamicMockRequests(now: Date = new Date()): Agendamento
       solicitanteId: 2,
       salaId: 1,
       cursoId: 1,
+      disciplinaId: 1,
       dataInicio: m1.inicio,
       dataFim: m1.fim,
       motivo: "Banca de Pré-Apresentação do Projeto Integrador",
@@ -1722,6 +1792,7 @@ export function generateDynamicMockRequests(now: Date = new Date()): Agendamento
       solicitante: findUser(2), // Marina Prado (PROFESSOR)
       sala: rooms[0], // Lab. 01
       curso: { id: 1, descritivo: "DSM" },
+      disciplina: systemDisciplinas[0], // Engenharia de Software II
     },
     {
       id: 19,
@@ -1742,6 +1813,7 @@ export function generateDynamicMockRequests(now: Date = new Date()): Agendamento
       solicitanteId: 4,
       salaId: 5,
       cursoId: 2,
+      disciplinaId: 6,
       dataInicio: m3.inicio,
       dataFim: m3.fim,
       motivo: "Simpósio Mensal de Tecnologia da Informação",
@@ -1750,12 +1822,14 @@ export function generateDynamicMockRequests(now: Date = new Date()): Agendamento
       solicitante: findUser(4), // Carla Santos (PROFESSOR)
       sala: rooms[4], // Auditório 01
       curso: { id: 2, descritivo: "GTI" },
+      disciplina: systemDisciplinas[5], // Governança e Gestão de TI
     },
     {
       id: 21,
       solicitanteId: 11,
       salaId: 12,
       cursoId: 4,
+      disciplinaId: 10,
       dataInicio: m4.inicio,
       dataFim: m4.fim,
       motivo: "Encontro Regional de Logística e Operações",
@@ -1764,6 +1838,7 @@ export function generateDynamicMockRequests(now: Date = new Date()): Agendamento
       solicitante: findUser(11), // Ricardo Mendes (PROFESSOR)
       sala: rooms[11], // Auditório 01 (Bloco 2)
       curso: { id: 4, descritivo: "Logística" },
+      disciplina: systemDisciplinas[9], // Gestão da Cadeia de Suprimentos
     },
     {
       id: 22,

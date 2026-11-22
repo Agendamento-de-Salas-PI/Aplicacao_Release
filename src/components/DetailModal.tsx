@@ -8,6 +8,7 @@ import {
   OFFICIAL_TIME_SLOT_OBJECTS,
   getTodayLocalStr,
   isTimeSlotPast,
+  systemDisciplinas,
 } from "@/data/mockData";
 import { useApp } from "@/context/AppContext";
 import { Icon } from "./Icon";
@@ -37,6 +38,13 @@ export default function DetailModal({
   const [bookingDate, setBookingDate] = useState(selectedDate);
   const [bookingSlot, setBookingSlot] = useState(selectedTimeSlot);
   const [motivo, setMotivo] = useState("Aula prática / Atividade acadêmica");
+  const professorDisciplinas =
+    user.professor?.disciplinas && user.professor.disciplinas.length > 0
+      ? user.professor.disciplinas
+      : systemDisciplinas;
+  const [selectedDisciplinaId, setSelectedDisciplinaId] = useState<number>(
+    () => professorDisciplinas[0]?.id ?? 1
+  );
 
   // Modal de edição de componentes da sala pelo GESTOR (Meta 3)
   const [showEditRoomModal, setShowEditRoomModal] = useState(false);
@@ -57,6 +65,9 @@ export default function DetailModal({
       return;
     }
     setBookingDate(selectedDate);
+    if (user.tipoUsuario === "PROFESSOR") {
+      setSelectedDisciplinaId(professorDisciplinas[0]?.id ?? 1);
+    }
     const availableForDate = getAvailableSlotsForRoom(room.id, selectedDate);
     if (availableForDate.includes(selectedTimeSlot)) {
       setBookingSlot(selectedTimeSlot);
@@ -135,6 +146,8 @@ export default function DetailModal({
       date: bookingDate,
       timeSlot: bookingSlot,
       motivo,
+      disciplinaId:
+        user.tipoUsuario === "PROFESSOR" ? selectedDisciplinaId : null,
     });
 
     if (!created) {
@@ -343,12 +356,30 @@ export default function DetailModal({
               : matchingBooking.status === "EM_NEGOCIACAO"
                 ? "Em negociação"
                 : "Aguardando aprovação";
+            const isProfessorBooking =
+              matchingBooking.solicitante.tipoUsuario === "PROFESSOR";
+            const disciplinaText = matchingBooking.disciplina
+              ? `${matchingBooking.disciplina.descritivo}${
+                  matchingBooking.disciplina.curso
+                    ? ` (${matchingBooking.disciplina.curso.descritivo})`
+                    : ""
+                }`
+              : null;
 
             return (
               <div key={slot.start}>
                 <time>{slot.start}</time>
                 <span className={`event ${isApproved ? "busy" : "pending"}`}>
-                  <strong>{matchingBooking.motivo || "Reserva acadêmica"}</strong>
+                  <strong>
+                    {isProfessorBooking && disciplinaText
+                      ? disciplinaText
+                      : matchingBooking.motivo || "Reserva acadêmica"}
+                  </strong>
+                  {isProfessorBooking && disciplinaText && (
+                    <span className="mt-0.5 block text-[10px] font-semibold text-[#b20d19]">
+                      Disciplina Docente · {matchingBooking.motivo || "Aula"}
+                    </span>
+                  )}
                   <small>
                     até {slot.end} · {statusLabel}
                     {canSeeAuthor
@@ -470,8 +501,32 @@ export default function DetailModal({
               </p>
             )}
 
+            {user.tipoUsuario === "PROFESSOR" && (
+              <div className="mt-3">
+                <label className="field-label" htmlFor="booking-disciplina">
+                  Disciplina ministrada (Obrigatório · RF 402/403)
+                </label>
+                <select
+                  id="booking-disciplina"
+                  required
+                  value={selectedDisciplinaId}
+                  onChange={(e) =>
+                    setSelectedDisciplinaId(Number(e.target.value))
+                  }
+                  className="auth-input w-full"
+                >
+                  {professorDisciplinas.map((disc) => (
+                    <option key={disc.id} value={disc.id}>
+                      {disc.descritivo}
+                      {disc.curso ? ` — ${disc.curso.descritivo}` : ""}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+
             <label className="field-label" htmlFor="booking-motivo">
-              Finalidade / Disciplina
+              Finalidade / Atividade
             </label>
             <textarea
               id="booking-motivo"
