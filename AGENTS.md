@@ -92,6 +92,9 @@ Este documento define o contexto arquitetural, as regras de negócio, os requisi
     1. A sala naquela data/horário passa a pertencer ao agendamento do professor;
     2. O agendamento conflitante do aluno muda automaticamente para **`"EM_NEGOCIACAO"`** (com `salaId: null`, aviso de que foi realocado devido à prioridade docente e mantendo os requisitos originais da sala que o aluno havia reservado);
     3. O sistema abre imediatamente (ou disponibiliza via botão *"Realocar sala do aluno"* no próprio card) o **Modal de Alocação em Grid** já existente, permitindo ao Gestor escolher uma nova sala disponível naquele horário para oferecer ao aluno (seguindo o fluxo de aceite/recusa do aluno).
+- **Ordenação da Fila no Painel do Gestor (`/gestor` — RF 403):**
+  1. **Prioridade de Perfil:** Pedidos feitos por `PROFESSOR` aparecem sempre no topo da lista, antes dos pedidos de `ALUNO` e demais perfis;
+  2. **Ordem Cronológica Crescente:** Dentro de cada grupo de perfil, os agendamentos são ordenados da data/horário mais próximo para o mais distante (`new Date(a.dataInicio).getTime() - new Date(b.dataInicio).getTime()`).
 - **Filtro Funcional de Mês no Topo Direito do Painel do Gestor (`/gestor`):**
   - Seletor funcional de mês/ano iniciado no mês corrente do usuário, filtrando em tempo real todos os agendamentos exibidos no painel do gestor (`Pendentes`, `Aprovados`, `Rejeitados`, `Em Negociação` e contadores).
 - **Aprovação de Solicitações Sem Sala Definida (Compatível vs. Fora dos Filtros):**

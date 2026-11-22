@@ -136,22 +136,33 @@ export default function ManagerScreen() {
     return String(req.dataInicio).slice(0, 7) === selectedMonth;
   });
 
-  // Filtragem de Solicitações a partir de `monthFilteredRequests`
-  const filteredRequests = monthFilteredRequests.filter((req) => {
-    const matchesSearch =
-      req.solicitante.nome.toLowerCase().includes(search.toLowerCase()) ||
-      (req.sala?.descritivo ?? "Sem sala").toLowerCase().includes(search.toLowerCase()) ||
-      (req.motivo ?? "").toLowerCase().includes(search.toLowerCase()) ||
-      (req.disciplina?.descritivo ?? "").toLowerCase().includes(search.toLowerCase());
+  // Filtragem e Ordenação de Solicitações a partir de `monthFilteredRequests`
+  // 1º Prioridade Docente (PROFESSOR antes de ALUNO/demais perfis - RF 403)
+  // 2º Ordem Cronológica Crescente (Data/Hora mais próxima primeiro)
+  const filteredRequests = monthFilteredRequests
+    .filter((req) => {
+      const matchesSearch =
+        req.solicitante.nome.toLowerCase().includes(search.toLowerCase()) ||
+        (req.sala?.descritivo ?? "Sem sala").toLowerCase().includes(search.toLowerCase()) ||
+        (req.motivo ?? "").toLowerCase().includes(search.toLowerCase()) ||
+        (req.disciplina?.descritivo ?? "").toLowerCase().includes(search.toLowerCase());
 
-    if (!matchesSearch) return false;
-    if (tab === "Pendentes")
-      return req.status === "PENDENTE" || req.status === "EM_NEGOCIACAO";
-    if (tab === "Aprovados") return req.status === "APROVADO";
-    if (tab === "Rejeitados")
-      return req.status === "REJEITADO" || req.status === "CANCELADO";
-    return true;
-  });
+      if (!matchesSearch) return false;
+      if (tab === "Pendentes")
+        return req.status === "PENDENTE" || req.status === "EM_NEGOCIACAO";
+      if (tab === "Aprovados") return req.status === "APROVADO";
+      if (tab === "Rejeitados")
+        return req.status === "REJEITADO" || req.status === "CANCELADO";
+      return true;
+    })
+    .sort((a, b) => {
+      const aIsProf = a.solicitante.tipoUsuario === "PROFESSOR" ? 0 : 1;
+      const bIsProf = b.solicitante.tipoUsuario === "PROFESSOR" ? 0 : 1;
+      if (aIsProf !== bIsProf) return aIsProf - bIsProf;
+      return (
+        new Date(a.dataInicio).getTime() - new Date(b.dataInicio).getTime()
+      );
+    });
 
   // Filtragem de Salas por Bloco
   const filteredRooms = rooms.filter((r) =>
