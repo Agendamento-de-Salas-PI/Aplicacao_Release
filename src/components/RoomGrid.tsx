@@ -48,6 +48,7 @@ export function RoomGrid({
             key={room.id}
             onClick={() => onSelect(room)}
             className={selected?.id === room.id ? "selected" : ""}
+            aria-label={`${room.descritivo} - ${room.capacidade} lugares - ${room.statusOcupacao}`}
           >
             <div>
               <Icon

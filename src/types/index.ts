@@ -179,6 +179,9 @@ export interface Agendamento {
   recusadoPeloUsuario?: boolean;
   motivoRecusaUsuario?: string | null;
   semSalaOriginal?: boolean;
+  conflitoAlunoAgendamentoId?: number | null;
+  prioridadeDocenteConflito?: boolean;
+  realocadoPorPrioridadeDocente?: boolean;
 }
 
 // Aliases para facilitar a importação nos componentes de UI

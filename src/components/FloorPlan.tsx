@@ -337,7 +337,7 @@ export default function FloorPlan({
                     fill: "#5b6168",
                   }}
                 >
-                  {room.capacidade} lugares · {room.codigoSvg}
+                  {room.capacidade} lugares
                 </text>
                 <circle cx={x + 16} cy={y + h - 16} r="4.5" />
                 <text className="status-text" x={x + 27} y={y + h - 12}>

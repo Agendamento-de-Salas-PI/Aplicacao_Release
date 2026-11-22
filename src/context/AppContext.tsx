@@ -68,7 +68,7 @@ type AppContextType = {
     proposedDate?: string,
     proposedTime?: string,
     proposedRoomId?: number | null
-  ) => void;
+  ) => Agendamento | null;
   respondToProposal: (requestId: number, accept: boolean) => void;
   updateRoomComponents: (
     roomId: number,
@@ -284,10 +284,25 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
 
     // Validação de conflito de horário (APROVADO ou PENDENTE na mesma sala e data)
+    let conflictingStudentBooking: Agendamento | null = null;
     if (data.salaId !== null) {
-      const available = getAvailableSlotsForRoom(data.salaId, data.date);
-      if (!available.includes(data.timeSlot)) {
-        return null;
+      const slotConflicts = requests.filter(
+        (req) =>
+          req.salaId === data.salaId &&
+          (req.status === "APROVADO" || req.status === "PENDENTE") &&
+          String(req.dataInicio).slice(0, 10) === data.date &&
+          formatIntervaloHorario(req.dataInicio, req.dataFim) === data.timeSlot
+      );
+
+      if (slotConflicts.length > 0) {
+        const onlyStudentConflicts = slotConflicts.every(
+          (req) => req.solicitante.tipoUsuario === "ALUNO"
+        );
+        if (user.tipoUsuario === "PROFESSOR" && onlyStudentConflicts) {
+          conflictingStudentBooking = slotConflicts[0];
+        } else {
+          return null;
+        }
       }
     }
 
@@ -340,6 +355,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       historico: [],
       requisitosFiltro: data.requisitosFiltro ?? null,
       semSalaOriginal: data.salaId === null,
+      conflitoAlunoAgendamentoId: conflictingStudentBooking?.id ?? null,
+      prioridadeDocenteConflito: Boolean(conflictingStudentBooking),
     };
 
     setRequests((prev) => [newBooking, ...prev]);
@@ -363,12 +380,106 @@ export function AppProvider({ children }: { children: ReactNode }) {
     proposedDate?: string,
     proposedTime?: string,
     proposedRoomId?: number | null
-  ) => {
+  ): Agendamento | null => {
     let affectedRoomId: number | null = null;
     let effectiveFinalStatus: StatusAgendamento = newStatus;
+    let preemptedStudentBooking: Agendamento | null = null;
+
+    const judgedReq = requests.find((r) => r.id === id) ?? null;
+    const judgedTargetRoom =
+      proposedRoomId !== undefined && proposedRoomId !== null
+        ? rooms.find((r) => r.id === proposedRoomId) ?? judgedReq?.sala ?? null
+        : judgedReq?.sala ?? null;
+
+    // Verificar se é aprovação de pedido de PROFESSOR que conflita com reserva de ALUNO
+    let studentToPreemptId: number | null = null;
+    if (
+      judgedReq &&
+      newStatus === "APROVADO" &&
+      judgedReq.solicitante.tipoUsuario === "PROFESSOR" &&
+      judgedTargetRoom
+    ) {
+      const reqDate = String(judgedReq.dataInicio).slice(0, 10);
+      const reqSlot = formatIntervaloHorario(
+        judgedReq.dataInicio,
+        judgedReq.dataFim
+      );
+      const conflictReq = requests.find(
+        (r) =>
+          r.id !== id &&
+          r.solicitante.tipoUsuario === "ALUNO" &&
+          (r.status === "APROVADO" || r.status === "PENDENTE") &&
+          (r.id === judgedReq.conflitoAlunoAgendamentoId ||
+            (r.salaId === judgedTargetRoom.id &&
+              String(r.dataInicio).slice(0, 10) === reqDate &&
+              formatIntervaloHorario(r.dataInicio, r.dataFim) === reqSlot))
+      );
+      if (conflictReq) {
+        studentToPreemptId = conflictReq.id;
+      }
+    }
 
     setRequests((prev) =>
       prev.map((req) => {
+        // Realocação automática do pedido do aluno por Prioridade Docente (Meta 7)
+        if (studentToPreemptId !== null && req.id === studentToPreemptId) {
+          const origRoom = req.sala;
+          const eqDescs =
+            origRoom?.equipamentos.map((e) =>
+              e.equipamento.descritivo.toLowerCase()
+            ) ?? [];
+          const hasTvOrProj = eqDescs.some(
+            (d) => d.includes("tv") || d.includes("projetor")
+          );
+          const hasAc = eqDescs.some((d) => d.includes("ar-condicionado"));
+          const hasComputers = eqDescs.some((d) => d.includes("computador"));
+          const eqLabels: string[] = [];
+          if (hasTvOrProj) eqLabels.push("TV/Projetor");
+          if (hasAc) eqLabels.push("Ar-condicionado");
+          if (hasComputers) eqLabels.push("Computadores");
+
+          const derivedRequisitos: RequisitosFiltroAgendamento =
+            req.requisitosFiltro ?? {
+              minCadeiras: origRoom?.capacidade ?? 20,
+              hasTvOrProjector: hasTvOrProj,
+              hasAc,
+              hasComputers,
+              equipamentos: eqLabels,
+              software: origRoom?.softwares?.[0]?.software.descritivo,
+            };
+
+          const preemptedHistory = {
+            id: (req.historico?.length ?? 0) + 1,
+            agendamentoId: req.id,
+            autorId: user.id,
+            statusAnterior: req.status,
+            statusNovo: "EM_NEGOCIACAO" as StatusAgendamento,
+            justificativa: `Horário em ${origRoom?.descritivo ?? "sala original"} cedido por Prioridade Docente (Prof. ${judgedReq?.solicitante.nome ?? ""}). Aguardando oferta de nova sala pelo gestor.`,
+            salaPropostaId: null,
+            dataInicioProposta: req.dataInicio,
+            dataFimProposta: req.dataFim,
+            criadoEm: new Date().toISOString(),
+          };
+
+          const updatedStudentReq: Agendamento = {
+            ...req,
+            status: "EM_NEGOCIACAO",
+            salaId: null,
+            sala: null,
+            salaProposta: null,
+            dataProposta: String(req.dataInicio).slice(0, 10),
+            horarioProposto: formatIntervaloHorario(req.dataInicio, req.dataFim),
+            semSalaOriginal: true,
+            realocadoPorPrioridadeDocente: true,
+            requisitosFiltro: derivedRequisitos,
+            recusadoPeloUsuario: false,
+            motivoRecusaUsuario: null,
+            historico: [...(req.historico ?? []), preemptedHistory],
+          };
+          preemptedStudentBooking = updatedStudentReq;
+          return updatedStudentReq;
+        }
+
         if (req.id !== id) return req;
 
         const targetRoom =
@@ -376,8 +487,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
             ? rooms.find((r) => r.id === proposedRoomId) ?? req.sala
             : req.sala;
 
-        // Meta 7 (Regra 2): Se era pedido sem sala e o Gestor escolheu uma sala FORA dos filtros do solicitante,
-        // não aprovar direto -> colocar em EM_NEGOCIACAO para aceite/recusa do solicitante
+        // Meta 7: Se era pedido sem sala (fora dos filtros) OU realocação de aluno por prioridade docente,
+        // envia como proposta (EM_NEGOCIACAO) para aceite/recusa do solicitante
         let isOutOfFilters = false;
         let finalStatus = newStatus;
         let finalJustification = justification ?? null;
@@ -396,6 +507,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
             isOutOfFilters = true;
             finalStatus = "EM_NEGOCIACAO";
             finalJustification = `Alocação sugerida em ${targetRoom.descritivo} (fora dos filtros originais: ${check.missingReasons.join(", ")}). Aguardando confirmação do solicitante.`;
+          } else if (req.realocadoPorPrioridadeDocente) {
+            finalStatus = "EM_NEGOCIACAO";
+            finalJustification = `Nova sala sugerida (${targetRoom.descritivo}) após realocação por Prioridade Docente. Aguardando confirmação do aluno.`;
           }
         }
 
@@ -432,6 +546,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
             horarioProposto:
               proposedTime ?? formatIntervaloHorario(req.dataInicio, req.dataFim),
             foraDosFiltros: isOutOfFilters,
+            realocadoPorPrioridadeDocente: false,
             recusadoPeloUsuario: false,
             motivoRecusaUsuario: null,
             historico: [...(req.historico ?? []), alteracao],
@@ -447,6 +562,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
           dataProposta: null,
           horarioProposto: null,
           foraDosFiltros: false,
+          prioridadeDocenteConflito: false,
+          realocadoPorPrioridadeDocente: false,
           recusadoPeloUsuario: false,
           motivoRecusaUsuario: null,
           historico: [...(req.historico ?? []), alteracao],
@@ -461,6 +578,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
         )
       );
     }
+
+    return preemptedStudentBooking;
   };
 
   const respondToProposal = (requestId: number, accept: boolean) => {

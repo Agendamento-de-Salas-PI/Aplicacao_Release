@@ -559,6 +559,17 @@ export default function ManagerScreen() {
                                 <Sparkles size={11} /> Prioridade Docente
                               </span>
                             )}
+                            {request.prioridadeDocenteConflito &&
+                              request.status === "PENDENTE" && (
+                                <span className="inline-flex items-center gap-1 rounded border border-[#e5c78f] bg-[#fff7e9] px-2 py-0.5 text-[10px] font-extrabold text-[#885405]">
+                                  Conflito com reserva de aluno — Prioridade Docente
+                                </span>
+                              )}
+                            {request.realocadoPorPrioridadeDocente && (
+                              <span className="inline-flex items-center gap-1 rounded border border-[#e5c78f] bg-[#fff7e9] px-2 py-0.5 text-[10px] font-extrabold text-[#885405]">
+                                Realocado por Prioridade Docente — oferecer nova sala
+                              </span>
+                            )}
                             {request.recusadoPeloUsuario && (
                               <span className="inline-flex items-center gap-1 rounded border border-[#e1b6b9] bg-[#fff0f0] px-2 py-0.5 text-[10px] font-extrabold text-[#9b0000]">
                                 Negado pelo usuário — refazer julgamento
@@ -649,19 +660,33 @@ export default function ManagerScreen() {
                                   setShowAllAvailableInModal(false);
                                   return;
                                 }
-                                judgeBookingRequest(
+                                const preemptedStudent = judgeBookingRequest(
                                   request.id,
                                   "APROVADO",
                                   "Aprovado pelo gestor"
                                 );
-                                notify(
-                                  `Agendamento de ${request.solicitante.nome} aprovado!`
-                                );
+                                if (preemptedStudent) {
+                                  notify(
+                                    `Pedido docente aprovado! Escolha uma nova sala para realocar o aluno ${preemptedStudent.solicitante.nome}.`
+                                  );
+                                  setAllocatingRequest(preemptedStudent);
+                                  setAllocationBlockFilter("ALL");
+                                  setAllocatedRoomId(null);
+                                  setShowAllAvailableInModal(false);
+                                } else {
+                                  notify(
+                                    `Agendamento de ${request.solicitante.nome} aprovado!`
+                                  );
+                                }
                               }}
                               className="inline-flex items-center gap-1.5 border border-[#9dcbb3] bg-white px-3 py-1.5 text-xs font-bold text-[#14623d] hover:bg-[#eaf6ef]"
                             >
                               <Check size={15} />{" "}
-                              {request.salaId === null ? "Alocar e Aprovar" : "Aprovar"}
+                              {request.realocadoPorPrioridadeDocente
+                                ? "Realocar sala do aluno"
+                                : request.salaId === null
+                                  ? "Alocar e Aprovar"
+                                  : "Aprovar"}
                             </button>
 
                             <button
@@ -864,7 +889,7 @@ export default function ManagerScreen() {
                     <div className="flex items-start justify-between gap-2">
                       <div>
                         <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#b20d19]">
-                          {room.bloco.descritivo} · SVG: {room.codigoSvg}
+                          {room.bloco.descritivo} · {room.tipoSala.descritivo}
                         </span>
                         <h3 className="mt-0.5 text-base font-black text-[#202124]">
                           {room.descritivo}
@@ -1138,10 +1163,14 @@ export default function ManagerScreen() {
                   <X size={18} />
                 </button>
                 <span className="text-[10px] font-extrabold uppercase tracking-[0.12em] text-[#b20d19]">
-                  ALOCAÇÃO DE SALA · RF 401 / RF 405
+                  {allocatingRequest.realocadoPorPrioridadeDocente
+                    ? "REALOCAÇÃO POR PRIORIDADE DOCENTE · RF 403 / RF 407"
+                    : "ALOCAÇÃO DE SALA · RF 401 / RF 405"}
                 </span>
                 <h2 className="mt-1 text-xl font-bold text-[#202124]">
-                  Selecione uma sala disponível para aprovar
+                  {allocatingRequest.realocadoPorPrioridadeDocente
+                    ? "Ofereça uma nova sala disponível ao aluno realocado"
+                    : "Selecione uma sala disponível para aprovar"}
                 </h2>
                 <p className="mt-1 text-xs text-[#666a6e]">
                   Solicitante: <strong>{allocatingRequest.solicitante.nome}</strong> · Data:{" "}
@@ -1317,7 +1346,11 @@ export default function ManagerScreen() {
                         undefined,
                         selectedRoomObj.id
                       );
-                      if (selectedRoomCheck.matches) {
+                      if (allocatingRequest.realocadoPorPrioridadeDocente) {
+                        notify(
+                          `Nova sala (${selectedRoomObj.descritivo}) enviada para confirmação do aluno ${allocatingRequest.solicitante.nome}!`
+                        );
+                      } else if (selectedRoomCheck.matches) {
                         notify(
                           `Solicitação de ${allocatingRequest.solicitante.nome} alocada em ${selectedRoomObj.descritivo} e aprovada!`
                         );
@@ -1329,14 +1362,17 @@ export default function ManagerScreen() {
                       setAllocatingRequest(null);
                     }}
                     className={`rounded px-4 py-2 text-xs font-bold text-white disabled:opacity-50 ${
-                      selectedRoomCheck.matches
+                      selectedRoomCheck.matches &&
+                      !allocatingRequest.realocadoPorPrioridadeDocente
                         ? "bg-[#167647] hover:bg-[#115e38]"
                         : "bg-[#c87a0b] hover:bg-[#a16107]"
                     }`}
                   >
-                    {selectedRoomCheck.matches
-                      ? "Confirmar alocação e aprovar"
-                      : "Propor sala ao solicitante (Fora dos filtros)"}
+                    {allocatingRequest.realocadoPorPrioridadeDocente
+                      ? "Enviar proposta de nova sala ao aluno"
+                      : selectedRoomCheck.matches
+                        ? "Confirmar alocação e aprovar"
+                        : "Propor sala ao solicitante (Fora dos filtros)"}
                   </button>
                 </div>
               </div>
@@ -1366,7 +1402,7 @@ export default function ManagerScreen() {
             </button>
 
             <span className="text-[10px] font-extrabold uppercase tracking-[0.12em] text-[#b20d19]">
-              {editingRoom.bloco.descritivo} · SVG: {editingRoom.codigoSvg}
+              {editingRoom.bloco.descritivo} · {editingRoom.tipoSala.descritivo}
             </span>
             <h2 className="mt-1 text-xl font-bold text-[#202124]">
               Editar componentes da sala

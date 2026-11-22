@@ -57,6 +57,31 @@ export default function DetailModal({
 
   const isUserInactive = !user.emailValidado || user.aluno?.ativo === false;
 
+  // Verifica se um horário na sala/data está ocupado APENAS por reserva de ALUNO (APROVADO ou PENDENTE)
+  const isSlotOccupiedOnlyByStudent = (dateStr: string, slotLabel: string): boolean => {
+    if (isTimeSlotPast(dateStr, slotLabel)) return false;
+    const slotReqs = requests.filter(
+      (req) =>
+        req.salaId === room.id &&
+        (req.status === "APROVADO" || req.status === "PENDENTE") &&
+        String(req.dataInicio).slice(0, 10) === dateStr &&
+        formatIntervaloHorario(req.dataInicio, req.dataFim) === slotLabel
+    );
+    return (
+      slotReqs.length > 0 &&
+      slotReqs.every((req) => req.solicitante.tipoUsuario === "ALUNO")
+    );
+  };
+
+  const getSelectableSlotsForUser = (dateStr: string): string[] => {
+    const freeSlots = getAvailableSlotsForRoom(room.id, dateStr);
+    if (user.tipoUsuario !== "PROFESSOR") return freeSlots;
+    return OFFICIAL_TIME_SLOT_OBJECTS.map((s) => s.label).filter(
+      (slot) =>
+        freeSlots.includes(slot) || isSlotOccupiedOnlyByStudent(dateStr, slot)
+    );
+  };
+
   const openBookingModal = () => {
     if (isUserInactive) {
       notify(
@@ -68,20 +93,20 @@ export default function DetailModal({
     if (user.tipoUsuario === "PROFESSOR") {
       setSelectedDisciplinaId(professorDisciplinas[0]?.id ?? 1);
     }
-    const availableForDate = getAvailableSlotsForRoom(room.id, selectedDate);
-    if (availableForDate.includes(selectedTimeSlot)) {
+    const selectableForDate = getSelectableSlotsForUser(selectedDate);
+    if (selectableForDate.includes(selectedTimeSlot)) {
       setBookingSlot(selectedTimeSlot);
     } else {
-      setBookingSlot(availableForDate[0] ?? "");
+      setBookingSlot(selectableForDate[0] ?? "");
     }
     setShowBookingModal(true);
   };
 
   const handleBookingDateChange = (newDate: string) => {
     setBookingDate(newDate);
-    const availableForNewDate = getAvailableSlotsForRoom(room.id, newDate);
-    if (!availableForNewDate.includes(bookingSlot)) {
-      setBookingSlot(availableForNewDate[0] ?? "");
+    const selectableForNewDate = getSelectableSlotsForUser(newDate);
+    if (!selectableForNewDate.includes(bookingSlot)) {
+      setBookingSlot(selectableForNewDate[0] ?? "");
     }
   };
 
@@ -122,6 +147,11 @@ export default function DetailModal({
 
   // Verifica se o horário selecionado está livre de agendamentos APROVADOS ou PENDENTES
   const availableSlotsInModal = getAvailableSlotsForRoom(room.id, bookingDate);
+  const selectableSlotsInModal = getSelectableSlotsForUser(bookingDate);
+  const isSelectedSlotStudentConflict =
+    user.tipoUsuario === "PROFESSOR" &&
+    Boolean(bookingSlot) &&
+    isSlotOccupiedOnlyByStudent(bookingDate, bookingSlot);
 
   const isAvailableInSelectedSlot = !roomRequestsOnDate.some((req) => {
     if (req.status !== "APROVADO" && req.status !== "PENDENTE") return false;
@@ -134,7 +164,7 @@ export default function DetailModal({
 
   const handleConfirmBooking = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!bookingSlot || !availableSlotsInModal.includes(bookingSlot)) {
+    if (!bookingSlot || !selectableSlotsInModal.includes(bookingSlot)) {
       notify(
         `O horário ${bookingSlot || "selecionado"} já possui agendamento nesta sala e data!`
       );
@@ -270,8 +300,7 @@ export default function DetailModal({
 
         <h2>{room.descritivo}</h2>
         <p>
-          {room.bloco.descritivo} · {room.tipoSala.descritivo} (SVG:{" "}
-          <code>{room.codigoSvg}</code>)
+          {room.bloco.descritivo} · {room.tipoSala.descritivo}
         </p>
 
         <div className="equipment">
@@ -475,19 +504,25 @@ export default function DetailModal({
                 >
                   {OFFICIAL_TIME_SLOT_OBJECTS.map((s) => {
                     const isPast = isTimeSlotPast(bookingDate, s.label);
-                    const isAvailable = availableSlotsInModal.includes(s.label);
+                    const isFree = availableSlotsInModal.includes(s.label);
+                    const isStudentOnly =
+                      user.tipoUsuario === "PROFESSOR" &&
+                      isSlotOccupiedOnlyByStudent(bookingDate, s.label);
+                    const canSelect = isFree || isStudentOnly;
                     return (
                       <option
                         key={s.label}
                         value={s.label}
-                        disabled={!isAvailable}
+                        disabled={!canSelect}
                       >
                         {s.label}{" "}
-                        {!isAvailable
-                          ? isPast
-                            ? "(Horário encerrado)"
-                            : "(Indisponível / Agendado)"
-                          : ""}
+                        {isStudentOnly
+                          ? "(Reservado por aluno · Prioridade Docente)"
+                          : !canSelect
+                            ? isPast
+                              ? "(Horário encerrado)"
+                              : "(Indisponível / Agendado)"
+                            : ""}
                       </option>
                     );
                   })}
@@ -495,7 +530,13 @@ export default function DetailModal({
               </div>
             </div>
 
-            {availableSlotsInModal.length === 0 && (
+            {isSelectedSlotStudentConflict && (
+              <p className="mt-2 rounded border border-[#e5c78f] bg-[#fff7e9] p-2 text-[10px] font-bold text-[#885405]">
+                Horário reservado por aluno — sujeito à realocação pelo gestor (Prioridade Docente)
+              </p>
+            )}
+
+            {selectableSlotsInModal.length === 0 && (
               <p className="mt-2 rounded bg-[#fff0f0] p-2 text-[10px] font-bold text-[#9b0000]">
                 Todos os 6 horários desta sala já estão ocupados nesta data. Escolha outra data.
               </p>
@@ -547,7 +588,7 @@ export default function DetailModal({
               <button
                 type="submit"
                 className="primary"
-                disabled={availableSlotsInModal.length === 0 || !bookingSlot}
+                disabled={selectableSlotsInModal.length === 0 || !bookingSlot}
               >
                 Confirmar solicitação
               </button>
