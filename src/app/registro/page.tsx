@@ -141,7 +141,7 @@ export default function RegistroPage() {
             <div className="grid grid-cols-2 gap-2.5">
               <div>
                 <label className="field-label" htmlFor="curso">
-                  Curso (RF 103)
+                  Curso
                 </label>
                 <select
                   id="curso"
