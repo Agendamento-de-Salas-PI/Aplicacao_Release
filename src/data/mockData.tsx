@@ -1506,7 +1506,7 @@ export function generateDynamicMockRequests(now: Date = new Date()): Agendamento
       dataInicio: s4.inicio,
       dataFim: s4.fim,
       motivo:
-        "Solicitação sem sala definida (RF 401) · Requisitos: mín. 25 cadeiras, TV/Projetor, Ar-condicionado, Computadores, Software: Docker",
+        "Solicitação sem sala definida · Requisitos: mín. 25 cadeiras, TV/Projetor, Ar-condicionado, Computadores, Software: Docker",
       status: "PENDENTE",
       criadoEm: createdIso,
       solicitante: findUser(6), // Lucas Oliveira (ALUNO)

@@ -610,7 +610,7 @@ export default function ManagerScreen() {
 
                       <div>
                         <span className="inline-flex bg-[#eeeeeb] px-2.5 py-1.5 text-xs font-extrabold">
-                          {request.sala?.descritivo ?? "Sem sala (RF 401)"}
+                          {request.sala?.descritivo ?? "Sem sala definida"}
                         </span>
                         {request.status === "EM_NEGOCIACAO" && request.salaProposta && (
                           <span className="mt-1 block text-[10px] font-bold text-[#885405]">

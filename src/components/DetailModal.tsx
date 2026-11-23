@@ -394,6 +394,9 @@ export default function DetailModal({
                     : ""
                 }`
               : null;
+            const cleanMotivo = (matchingBooking.motivo || "")
+              .replace(/\s*\[Requisitos filtrados:[^\]]*\]/gi, "")
+              .trim();
 
             return (
               <div key={slot.start}>
@@ -402,11 +405,11 @@ export default function DetailModal({
                   <strong>
                     {isProfessorBooking && disciplinaText
                       ? disciplinaText
-                      : matchingBooking.motivo || "Reserva acadêmica"}
+                      : cleanMotivo || "Reserva acadêmica"}
                   </strong>
                   {isProfessorBooking && disciplinaText && (
                     <span className="mt-0.5 block text-[10px] font-semibold text-[#b20d19]">
-                      Disciplina Docente · {matchingBooking.motivo || "Aula"}
+                      Disciplina Docente · {cleanMotivo || "Aula"}
                     </span>
                   )}
                   <small>
